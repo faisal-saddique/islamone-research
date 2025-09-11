@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  /* Colors - Primary */
+  --primary: #20B2AA;
+  --primary-light: #4FD1C7;
+  --primary-subtle: #E6F7F6;
+
+  /* Colors - Neutrals */
+  --white: #FFFFFF;
+  --gray-100: #F5F5F5;
+  --gray-300: #D4D4D4;
+  --gray-500: #737373;
+  --gray-800: #262626;
+
+  /* Colors - Status */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+
+  /* Typography - Fonts */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Typography - Sizes */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+
+  /* Typography - Weights */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Spacing */
+  --space-2: 0.5rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+}
+
+@theme {
+  --font-sans: var(--font-inter), var(--font-primary);
+  
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-subtle: var(--primary-subtle);
+  
+  --color-neutral-50: var(--white);
+  --color-neutral-100: var(--gray-100);
+  --color-neutral-300: var(--gray-300);
+  --color-neutral-500: var(--gray-500);
+  --color-neutral-800: var(--gray-800);
+  
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+
+  --font-size-sm: var(--text-sm);
+  --font-size-base: var(--text-base);
+  --font-size-lg: var(--text-lg);
+  --font-size-xl: var(--text-xl);
+  --font-size-2xl: var(--text-2xl);
+
+  --font-weight-normal: var(--weight-normal);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+
+  --spacing-2: var(--space-2);
+  --spacing-4: var(--space-4);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+}

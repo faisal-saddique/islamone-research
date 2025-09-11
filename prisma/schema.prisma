@@ -1,0 +1,601 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model aasanquran {
+  Id                Int     @id
+  SurahNumber       Int?
+  AyahNumber        Int?
+  Translation       String?
+  Tafseer           String?
+  TranslationSimple String?
+}
+
+model aasanquranintro {
+  Id          Int    @id
+  SurahNumber Int
+  Heading     String @db.VarChar(200)
+  Text        String
+}
+
+model abudawood {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model abudawoodchapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model ahsanulbayan {
+  Id                Int     @id
+  SurahNumber       Int?
+  AyahNumber        Int?
+  Translation       String?
+  Tafseer           String?
+  TranslationSimple String?
+}
+
+model ayah {
+  Id                Int     @id
+  SurahNumber       Int?
+  AyahNumber        Int?
+  AyahTextQalam     String?
+  AyahTextMuhammadi String?
+  AyahTextPdms      String?
+  AyahTextPlain     String?
+  SurahName         String?
+  Ruku              Int?
+  Sajda             Int?
+  ParahNumber       Int?
+  RukuParahNumber   Int?
+  RukuSurahNumber   String?
+  WordsNazar        String?
+  WordsHashmi       String?
+}
+
+model bayanulquran {
+  Id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+model bayanulquranintro {
+  Id          Int    @id
+  SurahNumber Int
+  Heading     String @db.VarChar(200)
+  Text        String
+}
+
+model bukhari {
+  Id           Int     @id
+  HadithNumber Int?
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model bukharichapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model dua {
+  id          Int     @id
+  book        String?
+  title       String?
+  intro       String?
+  arabic_text String?
+  translation String?
+  virtues     String?
+}
+
+model duaindex {
+  id        Int     @id
+  book      String?
+  sortorder Int?
+}
+
+model fiqh {
+  id      Int     @id
+  Chapter String?
+  Content String?
+}
+
+model ibneabbas {
+  Id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+model ibnekaseer {
+  Id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+model ibnemaaja {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model ibnemaajachapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model maarifulhadith {
+  Id           Int     @id
+  HadithNumber Int?
+  ChapterId    String?
+  Chapter      String
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+}
+
+model maarifulhadithchapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model maarifulquran {
+  Id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+model maarifulquranenglish {
+  id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model mishkaat {
+  Id           Int
+  HadithNumber Int
+  ChapterId    String
+  Chapter      String
+  Sanad        String
+  Arabic       String
+  Urdu         String
+
+  @@ignore
+}
+
+model mishkaatchapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model motahimammalik {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model motahimammalikchapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model muslim {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model muslimchapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model musnadahmad {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+}
+
+model musnadahmadchapters {
+  Id            Int    @id
+  Topic         String @db.VarChar(255)
+  HadithCount   Int?
+  FirstHadithId Int?
+}
+
+model nasai {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model nasaichapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model parah {
+  ParahNumber Int     @id @db.SmallInt
+  Parah       String  @db.VarChar(255)
+  NameEnglish String?
+  AyahCount   Int?
+}
+
+model seerahbooks {
+  Id   Int    @id
+  Name String @db.VarChar(255)
+}
+
+model seerahcontent {
+  Id      Int     @id
+  Book    String?
+  Chapter String?
+  Text    String?
+}
+
+model shamail {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model shamailchapters {
+  Id            Int    @id
+  Topic         String @db.VarChar(255)
+  HadithCount   Int?
+  FirstHadithId Int?
+}
+
+model surah {
+  Id              Int    @id
+  SurahNumber     Int
+  AyahCount       Int
+  StartAyahNumber Int
+  NameArabic      String @db.VarChar(200)
+  NameEnglish     String @db.VarChar(100)
+  NameMeaning     String @db.VarChar(100)
+  Type            String @db.VarChar(45)
+  RevelationOrder Int
+  RukuCount       Int
+}
+
+model tadabburequran {
+  Id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+model tadabburequranintro {
+  Id          Int    @id
+  SurahNumber Int
+  Heading     String @db.VarChar(200)
+  Text        String
+}
+
+model tafheemenglish {
+  Id                Int     @id
+  SurahNumber       Int?
+  AyahNumber        Int?
+  Translation       String?
+  Tafseer           String?
+  TranslationSimple String?
+}
+
+model tafheemenglishintro {
+  Id          Int    @id
+  SurahNumber Int
+  Heading     String @db.VarChar(200)
+  Text        String
+}
+
+model tafheemulquran {
+  Id                Int     @id
+  SurahNumber       Int?
+  AyahNumber        Int?
+  Translation       String?
+  Tafseer           String?
+  TranslationSimple String?
+}
+
+model tafheemulquranintro {
+  Id          Int    @id
+  SurahNumber Int
+  Heading     String @db.VarChar(200)
+  Text        String
+}
+
+model tafseeralquran {
+  Id          Int     @id
+  SurahNumber Int?
+  AyahNumber  Int?
+  Translation String?
+  Tafseer     String?
+}
+
+model tirmidhi {
+  Id           Int     @id
+  HadithNumber Int
+  ChapterId    Int
+  Chapter      String?
+  Sanad        String?
+  Arabic       String?
+  Urdu         String?
+  English      String?
+}
+
+model tirmidhichapters {
+  Id          Int    @id
+  Topic       String @db.VarChar(255)
+  HadithCount Int?
+}
+
+model translations {
+  Id                  Int     @id
+  SurahNumber         Int?
+  AyahNumber          Int?
+  Maududi             String?
+  Jalandhary          String?
+  Junagarhi           String?
+  Taqi                String?
+  AhmadRaza           String?
+  TahirulQadri        String?
+  AbdusSalam          String?
+  Kilani              String?
+  Islahi              String?
+  Majid               String?
+  Israr               String?
+  Riffat              String?
+  Transliteration     String?
+  MaududiEn           String?
+  Mubarakpuri         String?
+  Pickthall           String?
+  SaheehInternational String?
+  Sarwar              String?
+  Shakir              String?
+  YousufAli           String?
+  TaqiEnglish         String?
+}
+
+model User {
+  id            String    @id @default(cuid())
+  firebaseUid   String    @unique
+  email         String    @unique
+  displayName   String?
+  photoURL      String?
+  emailVerified Boolean   @default(false)
+  role          UserRole  @default(REVIEWER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Translation review relationships
+  reviews       TranslationReview[]
+  progress      UserProgress?
+  
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MODERATOR
+  REVIEWER
+}
+
+// User progress tracking
+model UserProgress {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  totalReviews          Int      @default(0)
+  approvedReviews       Int      @default(0)
+  flaggedReviews        Int      @default(0)
+  currentStreak         Int      @default(0)
+  longestStreak         Int      @default(0)
+  lastReviewDate        DateTime?
+  
+  // Progress tracking by sections
+  completedSurahs       Json     @default("[]") // Array of completed surah numbers
+  reviewedAyahs         Json     @default("[]") // Array of {surah: number, ayah: number}
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("user_progress")
+}
+
+// Translation reviews and verifications
+model TranslationReview {
+  id                String           @id @default(cuid())
+  
+  // User and timing
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewedAt        DateTime         @default(now())
+  
+  // Ayah reference
+  surahNumber       Int
+  ayahNumber        Int
+  
+  // Translation details
+  translationSource String           // Which translation was reviewed (e.g., "Maududi", "YousufAli")
+  translationText   String           // The actual translation text that was reviewed
+  
+  // Review outcome
+  status            ReviewStatus
+  confidence        Int              @default(5) // 1-10 scale
+  
+  // Feedback and notes
+  feedback          String?          // User's notes or suggestions
+  suggestedEdit     String?          // Suggested correction if flagged
+  adminNotes        String?          // Admin review notes
+  
+  // Metadata
+  isProcessed       Boolean          @default(false) // Whether admin has processed this review
+  processingNotes   String?          // Admin processing notes
+  processedAt       DateTime?
+  processedBy       String?          // Admin user ID who processed
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  @@unique([userId, surahNumber, ayahNumber, translationSource])
+  @@index([surahNumber, ayahNumber])
+  @@index([status])
+  @@index([isProcessed])
+  @@map("translation_reviews")
+}
+
+enum ReviewStatus {
+  APPROVED     // Translation is accurate
+  FLAGGED      // Translation needs correction
+  NEEDS_REVIEW // Uncertain, needs another reviewer
+}
+
+// Admin metrics and analytics
+model ReviewMetrics {
+  id                    String   @id @default(cuid())
+  date                  DateTime @unique @default(now())
+  
+  // Daily metrics
+  totalReviews          Int      @default(0)
+  approvedCount         Int      @default(0)
+  flaggedCount          Int      @default(0)
+  needsReviewCount      Int      @default(0)
+  
+  // User metrics
+  activeReviewers       Int      @default(0)
+  newUsers              Int      @default(0)
+  
+  // Translation source metrics
+  translationMetrics    Json     @default("{}") // {"Maududi": {approved: 10, flagged: 2}, ...}
+  
+  // Progress metrics
+  completionPercentage  Float    @default(0.0)
+  averageConfidence     Float    @default(0.0)
+  
+  createdAt             DateTime @default(now())
+  
+  @@map("review_metrics")
+}
+
+// Flagged translations for admin review
+model FlaggedTranslation {
+  id                String           @id @default(cuid())
+  
+  // Ayah reference
+  surahNumber       Int
+  ayahNumber        Int
+  translationSource String
+  originalText      String
+  
+  // Review summary
+  flagCount         Int              @default(1)
+  totalReviews      Int              @default(1)
+  averageConfidence Float            @default(5.0)
+  
+  // Common feedback
+  commonIssues      Json             @default("[]") // Array of common issues reported
+  suggestedEdits    Json             @default("[]") // Array of suggested corrections
+  
+  // Admin processing
+  status            FlaggedStatus    @default(PENDING)
+  adminDecision     String?          // Admin's final decision
+  correctedText     String?          // Admin's corrected version
+  adminNotes        String?
+  
+  processedAt       DateTime?
+  processedBy       String?          // Admin user ID
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  @@unique([surahNumber, ayahNumber, translationSource])
+  @@index([status])
+  @@map("flagged_translations")
+}
+
+enum FlaggedStatus {
+  PENDING      // Awaiting admin review
+  CONFIRMED    // Admin confirmed the issue
+  REJECTED     // Admin rejected the flags
+  CORRECTED    // Admin has corrected the translation
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model words {
+  SurahNumber Int?
+  AyahNumber  Int?
+  Word        Int?
+  Arabic      String?
+  English     String?
+
+  @@ignore
+}
