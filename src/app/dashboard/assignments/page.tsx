@@ -120,7 +120,7 @@ export default function AssignmentsPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl text-neutral-800 font-medium mb-1">
+                          <div className="arabic-text text-2xl text-neutral-800 font-medium mb-1">
                             {surah.NameArabic}
                           </div>
                           <span className={`px-2 py-1 rounded text-xs ${

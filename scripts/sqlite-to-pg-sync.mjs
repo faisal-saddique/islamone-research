@@ -15,7 +15,7 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const { Client } = pkg;
+const { Client, Pool } = pkg;
 
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
@@ -201,32 +201,37 @@ async function convertSchemaToPostgreSQL(db, tableName, sqliteSchema) {
 }
 
 /**
- * Create all tables in PostgreSQL database
+ * Create all tables in PostgreSQL database with parallel processing
  */
 async function createPostgreSQLTables(pgClient, sqliteDb) {
   const tables = await getSqliteTables(sqliteDb);
-  
+
   console.log(`Creating ${tables.length} tables in PostgreSQL...`);
 
-  for (const table of tables) {
-    console.log(`Creating table: ${table}`);
-    const sqliteSchema = await getTableSchema(sqliteDb, table);
-    const pgSchema = await convertSchemaToPostgreSQL(sqliteDb, table, sqliteSchema);
+  // Process tables in smaller batches to avoid overwhelming the connection
+  const batchSize = 5;
+  for (let i = 0; i < tables.length; i += batchSize) {
+    const tableBatch = tables.slice(i, i + batchSize);
 
-    try {
-      // Drop table if exists
-      await pgClient.query(`DROP TABLE IF EXISTS "${table}" CASCADE;`);
-      // Create table
-      await pgClient.query(pgSchema);
-    } catch (error) {
-      console.error(`Error creating table ${table}:`, error.message);
-      console.error(`Schema was: ${pgSchema}`);
-    }
+    await Promise.all(tableBatch.map(async (table) => {
+      console.log(`Creating table: ${table}`);
+      try {
+        const sqliteSchema = await getTableSchema(sqliteDb, table);
+        const pgSchema = await convertSchemaToPostgreSQL(sqliteDb, table, sqliteSchema);
+
+        // Drop table if exists
+        await pgClient.query(`DROP TABLE IF EXISTS "${table}" CASCADE;`);
+        // Create table
+        await pgClient.query(pgSchema);
+      } catch (error) {
+        console.error(`Error creating table ${table}:`, error.message);
+      }
+    }));
   }
 }
 
 /**
- * Copy data from SQLite table to PostgreSQL table
+ * Copy data from SQLite table to PostgreSQL table using batch processing
  */
 async function copyTableData(sqliteDb, pgClient, tableName) {
   try {
@@ -242,18 +247,53 @@ async function copyTableData(sqliteDb, pgClient, tableName) {
       return;
     }
 
-    // Prepare INSERT statement
-    const columnList = columnNames.map(col => `"${col}"`).join(', ');
-    const placeholders = columnNames.map((_, i) => `$${i + 1}`).join(', ');
-    const insertSql = `INSERT INTO "${tableName}" (${columnList}) VALUES (${placeholders})`;
+    console.log(`  Processing ${rows.length} rows in batches...`);
 
-    // Insert data in batches
-    for (const row of rows) {
-      const values = columnNames.map(col => row[col]);
-      await pgClient.query(insertSql, values);
+    const columnList = columnNames.map(col => `"${col}"`).join(', ');
+
+    // Start a transaction for better performance
+    await pgClient.query('BEGIN');
+
+    try {
+      // Clear existing data
+      await pgClient.query(`TRUNCATE TABLE "${tableName}"`);
+
+      // Use batch INSERT with optimized batch sizes
+      const batchSize = 1000;
+      let processedRows = 0;
+
+      for (let i = 0; i < rows.length; i += batchSize) {
+        const batch = rows.slice(i, i + batchSize);
+        const placeholderRows = [];
+        const allValues = [];
+
+        for (let j = 0; j < batch.length; j++) {
+          const row = batch[j];
+          const rowPlaceholders = columnNames.map((_, colIndex) =>
+            `$${j * columnNames.length + colIndex + 1}`
+          ).join(', ');
+          placeholderRows.push(`(${rowPlaceholders})`);
+
+          columnNames.forEach(col => allValues.push(row[col]));
+        }
+
+        const batchInsertSql = `INSERT INTO "${tableName}" (${columnList}) VALUES ${placeholderRows.join(', ')}`;
+        await pgClient.query(batchInsertSql, allValues);
+
+        processedRows += batch.length;
+        if (processedRows % 5000 === 0) {
+          console.log(`    Processed ${processedRows}/${rows.length} rows...`);
+        }
+      }
+
+      await pgClient.query('COMMIT');
+      console.log(`  Copied ${rows.length} rows`);
+
+    } catch (error) {
+      await pgClient.query('ROLLBACK');
+      throw error;
     }
 
-    console.log(`  Copied ${rows.length} rows`);
   } catch (error) {
     console.error(`  Error copying data for table ${tableName}:`, error.message);
   }
@@ -309,16 +349,28 @@ async function main() {
     sqliteDb = promisifyDb(sqliteConnection);
     console.log(`✓ Connected to SQLite: ${SQLITE_DB_PATH}`);
 
-    // Connect to PostgreSQL
+    // Connect to PostgreSQL with optimized settings
     console.log('\n🐘 Connecting to PostgreSQL...');
     pgClient = new Client({
       connectionString: DATABASE_URL,
       ssl: {
         rejectUnauthorized: false
-      }
+      },
+      // Optimize connection settings for bulk operations
+      statement_timeout: 300000, // 5 minutes
+      query_timeout: 300000,
+      connectionTimeoutMillis: 30000,
+      idleTimeoutMillis: 30000,
+      max: 1, // Single connection for this script
     });
     await pgClient.connect();
-    console.log(`✓ Connected to PostgreSQL using DATABASE_URL`);
+
+    // Optimize PostgreSQL settings for bulk operations
+    await pgClient.query('SET synchronous_commit = OFF');
+    await pgClient.query("SET work_mem = '256MB'");
+    await pgClient.query("SET maintenance_work_mem = '512MB'");
+
+    console.log(`✓ Connected to PostgreSQL with optimized settings`);
 
     // Verify database is ready
     console.log('\n🔍 Verifying database readiness...');
@@ -344,11 +396,39 @@ async function main() {
     console.log('\n🏗️  Creating/updating table structures...');
     await createPostgreSQLTables(pgClient, sqliteDb);
 
-    // Copy data
+    // Copy data with parallel processing for smaller tables
     console.log(`\n📥 Syncing data from ${tablesToSync.length} tables...`);
+
+    // Get table sizes to optimize processing order
+    const tableInfo = [];
     for (const table of tablesToSync) {
-      console.log(`   📋 Syncing table: ${table}`);
-      await copyTableData(sqliteDb, pgClient, table);
+      const countResult = await sqliteDb.get(`SELECT COUNT(*) as count FROM ${table}`);
+      tableInfo.push({ name: table, rowCount: countResult.count });
+    }
+
+    // Sort by row count - process large tables sequentially, small ones in parallel
+    tableInfo.sort((a, b) => b.rowCount - a.rowCount);
+
+    const largeTables = tableInfo.filter(t => t.rowCount > 10000);
+    const smallTables = tableInfo.filter(t => t.rowCount <= 10000);
+
+    // Process large tables sequentially
+    for (const tableData of largeTables) {
+      console.log(`   📋 Syncing large table: ${tableData.name} (${tableData.rowCount} rows)`);
+      await copyTableData(sqliteDb, pgClient, tableData.name);
+    }
+
+    // Process small tables in parallel batches
+    if (smallTables.length > 0) {
+      console.log(`   📋 Syncing ${smallTables.length} smaller tables in parallel...`);
+      const smallBatchSize = 3; // Process 3 small tables at once
+      for (let i = 0; i < smallTables.length; i += smallBatchSize) {
+        const batch = smallTables.slice(i, i + smallBatchSize);
+        await Promise.all(batch.map(async (tableData) => {
+          console.log(`     Processing: ${tableData.name} (${tableData.rowCount} rows)`);
+          await copyTableData(sqliteDb, pgClient, tableData.name);
+        }));
+      }
     }
 
     console.log('\n✅ Database sync completed successfully!');

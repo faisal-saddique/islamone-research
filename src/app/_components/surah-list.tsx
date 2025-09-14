@@ -29,7 +29,7 @@ export function SurahList() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg text-neutral-800 font-medium">
+              <div className="arabic-text text-lg text-neutral-800 font-medium">
                 {surah.NameArabic}
               </div>
               <div className="text-xs text-neutral-500">

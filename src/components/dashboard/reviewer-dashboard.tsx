@@ -137,7 +137,7 @@ export function ReviewerDashboard({ overview, user }: ReviewerDashboardProps) {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg text-neutral-800 font-medium">
+                        <p className="arabic-text text-lg text-neutral-800 font-medium">
                           {surah.NameArabic}
                         </p>
                         <p className="text-xs text-neutral-500">

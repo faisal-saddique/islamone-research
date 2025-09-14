@@ -20,6 +20,7 @@
 
   /* Typography - Fonts */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-arabic: var(--font-scheherazade), 'Arabic Typesetting', 'Traditional Arabic', serif;
   
   /* Typography - Sizes */
   --text-sm: 0.875rem;
@@ -42,6 +43,7 @@
 
 @theme {
   --font-sans: var(--font-inter), var(--font-primary);
+  --font-arabic: var(--font-arabic);
   
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
@@ -71,4 +73,13 @@
   --spacing-4: var(--space-4);
   --spacing-6: var(--space-6);
   --spacing-8: var(--space-8);
+}
+
+/* Arabic text styling */
+.arabic-text {
+  font-family: var(--font-arabic);
+  font-feature-settings: "liga" on, "calt" on;
+  direction: rtl;
+  text-align: right;
+  line-height: 1.8;
 }

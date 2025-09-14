@@ -21,8 +21,8 @@ export function SurahReader({ surahNumber }: SurahReaderProps) {
               {ayah.AyahNumber}
             </div>
             <div className="flex-1 space-y-4">
-              <div className="text-right text-xl leading-relaxed text-neutral-800">
-                {ayah.AyahTextPlain ?? ayah.AyahTextQalam ?? ayah.AyahTextMuhammadi}
+              <div className="arabic-text text-xl text-neutral-800">
+                {ayah.AyahTextMuhammadi ?? ayah.AyahTextQalam ?? ayah.AyahTextPlain}
               </div>
               {ayah.Translation && (
                 <div className="text-neutral-700 leading-relaxed">

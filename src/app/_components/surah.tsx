@@ -19,7 +19,7 @@ export function LatestSurah() {
                 <div className="text-xl font-semibold text-primary">
                   {surah.SurahNumber}
                 </div>
-                <div className="text-lg font-medium text-neutral-800">
+                <div className="arabic-text text-lg font-medium text-neutral-800">
                   {surah.NameArabic}
                 </div>
                 <div className="text-base font-medium text-neutral-800">

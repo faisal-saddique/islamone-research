@@ -58,7 +58,7 @@ export default async function SurahPage({ params }: Props) {
 
         <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300 mb-8">
           <div className="text-center">
-            <div className="text-2xl text-neutral-800 font-semibold mb-2">
+            <div className="arabic-text text-2xl text-neutral-800 font-semibold mb-2">
               {surah.NameArabic}
             </div>
             <div className="text-xl font-semibold text-neutral-800 mb-1">

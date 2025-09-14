@@ -229,8 +229,8 @@ function ReviewPageContent() {
                   <h3 className="text-lg font-semibold text-neutral-800 mb-4">
                     Surah {currentSurah}, Ayah {currentAyah}
                   </h3>
-                  <div className="text-right text-2xl leading-relaxed text-neutral-800 mb-4" dir="rtl">
-                    {contentForReview.ayah.AyahTextPlain}
+                  <div className="arabic-text text-2xl text-neutral-800 mb-4">
+                    {contentForReview.ayah.AyahTextMuhammadi ?? contentForReview.ayah.AyahTextQalam ?? contentForReview.ayah.AyahTextPlain}
                   </div>
                 </div>
               )}

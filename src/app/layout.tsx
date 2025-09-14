@@ -2,6 +2,7 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Scheherazade_New } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { AuthProvider } from "~/providers/auth-provider";
@@ -21,11 +22,17 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const scheherazadeNew = Scheherazade_New({
+  subsets: ["arabic", "latin"],
+  variable: "--font-scheherazade",
+  weight: ["400", "500", "600", "700"],
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable}`}>
+    <html lang="en" className={`${inter.variable} ${scheherazadeNew.variable}`}>
       <body className="bg-neutral-100 min-h-screen flex flex-col">
         <TRPCReactProvider>
           <ToastProvider>
