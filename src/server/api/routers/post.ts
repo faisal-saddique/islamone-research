@@ -44,4 +44,36 @@ export const quranRouter = createTRPCRouter({
 
     return ayah ?? null;
   }),
+
+  getAyahs: publicProcedure
+    .input(z.object({ surahNumber: z.number().min(1).max(114) }))
+    .query(async ({ ctx, input }) => {
+      const ayahs = await ctx.db.ayah.findMany({
+        where: { SurahNumber: input.surahNumber },
+        orderBy: { AyahNumber: "asc" },
+      });
+
+      const translations = await ctx.db.translations.findMany({
+        where: { SurahNumber: input.surahNumber },
+        orderBy: { AyahNumber: "asc" },
+        select: {
+          AyahNumber: true,
+          SaheehInternational: true,
+          YousufAli: true,
+          Pickthall: true,
+        },
+      });
+
+      const ayahsWithTranslations = ayahs.map((ayah) => {
+        const translation = translations.find(
+          (t) => t.AyahNumber === ayah.AyahNumber
+        );
+        return {
+          ...ayah,
+          Translation: translation?.SaheehInternational ?? translation?.YousufAli ?? translation?.Pickthall,
+        };
+      });
+
+      return ayahsWithTranslations;
+    }),
 });

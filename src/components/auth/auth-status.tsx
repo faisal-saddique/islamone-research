@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useAuthContext } from "~/providers/auth-provider";
 
 export function AuthStatus() {
@@ -38,9 +39,11 @@ export function AuthStatus() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               {user.photoURL && (
-                <img 
+                <Image 
                   src={user.photoURL} 
                   alt="Profile" 
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full"
                 />
               )}

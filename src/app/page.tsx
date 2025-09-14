@@ -1,5 +1,4 @@
 import { LatestSurah } from "~/app/_components/surah";
-import { AuthStatus } from "~/components/auth/auth-status";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
@@ -15,8 +14,6 @@ export default async function Home() {
           <p className="text-lg text-neutral-500 max-w-2xl text-center">
             Comprehensive Islamic research platform with Quran, Hadith, and Islamic literature
           </p>
-
-          <AuthStatus />
 
           <LatestSurah />
         </div>

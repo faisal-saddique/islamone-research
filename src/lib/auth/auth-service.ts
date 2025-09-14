@@ -1,5 +1,4 @@
 import {
-  type User,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -27,7 +26,7 @@ export type AuthError = {
 
 export class AuthService {
   private static instance: AuthService;
-  private authStateListeners: Set<(user: AuthUser | null) => void> = new Set();
+  private authStateListeners = new Set<(user: AuthUser | null) => void>();
 
   private constructor() {
     this.initializeAuthListener();
@@ -41,33 +40,35 @@ export class AuthService {
   }
 
   private initializeAuthListener() {
-    onAuthStateChanged(auth, async (firebaseUser) => {
-      let authUser: AuthUser | null = null;
-      
+    onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        try {
-          const token = await getIdToken(firebaseUser);
-          authUser = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-            emailVerified: firebaseUser.emailVerified,
-            token,
-          };
-        } catch (error) {
-          console.error("Failed to get ID token:", error);
-          authUser = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-            emailVerified: firebaseUser.emailVerified,
-          };
-        }
+        // Handle token asynchronously
+        void getIdToken(firebaseUser)
+          .then((token) => {
+            const authUser: AuthUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              photoURL: firebaseUser.photoURL,
+              emailVerified: firebaseUser.emailVerified,
+              token,
+            };
+            this.notifyListeners(authUser);
+          })
+          .catch((error) => {
+            console.error("Failed to get ID token:", error);
+            const authUser: AuthUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              photoURL: firebaseUser.photoURL,
+              emailVerified: firebaseUser.emailVerified,
+            };
+            this.notifyListeners(authUser);
+          });
+      } else {
+        this.notifyListeners(null);
       }
-
-      this.notifyListeners(authUser);
     });
   }
 
@@ -92,7 +93,7 @@ export class AuthService {
         emailVerified: result.user.emailVerified,
         token,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
   }
@@ -109,7 +110,7 @@ export class AuthService {
         emailVerified: result.user.emailVerified,
         token,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
   }
@@ -127,7 +128,7 @@ export class AuthService {
         emailVerified: result.user.emailVerified,
         token,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
   }
@@ -135,7 +136,7 @@ export class AuthService {
   async signOut(): Promise<void> {
     try {
       await signOut(auth);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
   }
@@ -143,7 +144,7 @@ export class AuthService {
   async resetPassword(email: string): Promise<void> {
     try {
       await sendPasswordResetEmail(auth, email);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
   }
@@ -172,11 +173,13 @@ export class AuthService {
     };
   }
 
-  private handleAuthError(error: any): AuthError {
-    const authError: AuthError = {
-      code: error.code || 'unknown',
-      message: this.getReadableErrorMessage(error.code) || error.message || 'An unknown error occurred',
-    };
+  private handleAuthError(error: unknown): Error {
+    const firebaseError = error as { code?: string; message?: string };
+    const code = firebaseError.code ?? 'unknown';
+    const message = this.getReadableErrorMessage(code) ?? firebaseError.message ?? 'An unknown error occurred';
+    
+    const authError = new Error(message);
+    (authError as Error & { code: string }).code = code;
     return authError;
   }
 
@@ -194,6 +197,6 @@ export class AuthService {
       'auth/invalid-credential': 'Invalid email or password.',
     };
     
-    return errorMessages[errorCode] || 'An error occurred during authentication.';
+    return errorMessages[errorCode] ?? 'An error occurred during authentication.';
   }
 }

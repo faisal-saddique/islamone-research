@@ -5,8 +5,10 @@ import { Inter } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { AuthProvider } from "~/providers/auth-provider";
+import { ToastProvider } from "~/contexts/toast-context";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
+import { ToastContainer } from "~/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "IslamOne Research",
@@ -26,13 +28,16 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable}`}>
       <body className="bg-neutral-100 min-h-screen flex flex-col">
         <TRPCReactProvider>
-          <AuthProvider>
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </AuthProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+              <ToastContainer />
+            </AuthProvider>
+          </ToastProvider>
         </TRPCReactProvider>
       </body>
     </html>

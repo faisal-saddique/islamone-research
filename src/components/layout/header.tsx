@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "~/providers/auth-provider";
+import { AuthModal } from "~/components/ui/auth-modal";
 
 export function Header() {
   const { user, dbUser, signOut } = useAuthContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +38,14 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
+            {user && (
+              <Link 
+                href="/dashboard" 
+                className="text-neutral-500 hover:text-neutral-800 transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
             <Link 
               href="/quran" 
               className="text-neutral-500 hover:text-neutral-800 transition-colors"
@@ -70,9 +81,11 @@ export function Header() {
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-100 transition-colors"
                 >
                   {user.photoURL ? (
-                    <img 
+                    <Image 
                       src={user.photoURL} 
                       alt="Profile" 
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full"
                     />
                   ) : (
@@ -100,9 +113,11 @@ export function Header() {
                     <div className="p-4 border-b border-neutral-300">
                       <div className="flex items-center gap-3 mb-2">
                         {user.photoURL ? (
-                          <img 
+                          <Image 
                             src={user.photoURL} 
                             alt="Profile" 
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full"
                           />
                         ) : (
@@ -162,16 +177,6 @@ export function Header() {
                         Profile Settings
                       </Link>
                       
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                        onClick={() => setIsProfileDropdownOpen(false)}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H9a2 2 0 01-2-2z" />
-                        </svg>
-                        Dashboard
-                      </Link>
 
                       <Link
                         href="/bookmarks"
@@ -305,12 +310,12 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <Link 
-                href="/#auth" 
+              <button 
+                onClick={() => setIsAuthModalOpen(true)}
                 className="px-4 py-2 bg-primary hover:bg-primary-light text-neutral-50 rounded transition-colors text-sm"
               >
                 Sign In
-              </Link>
+              </button>
             )}
           </div>
 
@@ -329,6 +334,15 @@ export function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-neutral-300 py-4">
             <nav className="flex flex-col gap-3">
+              {user && (
+                <Link 
+                  href="/dashboard" 
+                  className="text-neutral-500 hover:text-neutral-800 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              )}
               <Link 
                 href="/quran" 
                 className="text-neutral-500 hover:text-neutral-800 transition-colors"
@@ -357,19 +371,88 @@ export function Header() {
               >
                 About
               </Link>
-              {!user && (
-                <Link 
-                  href="/#auth" 
+
+              {user ? (
+                <div className="border-t border-neutral-300 pt-3">
+                  <div className="flex items-center gap-3 mb-3">
+                    {user.photoURL ? (
+                      <Image 
+                        src={user.photoURL} 
+                        alt="Profile" 
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-primary text-neutral-50 rounded-full flex items-center justify-center text-sm font-medium">
+                        {(user.displayName ?? user.email ?? "U").charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-800 truncate">
+                        {user.displayName ?? "User"}
+                      </p>
+                      <p className="text-xs text-neutral-500 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/profile"
+                      className="text-neutral-500 hover:text-neutral-800 transition-colors text-sm"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      href="/bookmarks"
+                      className="text-neutral-500 hover:text-neutral-800 transition-colors text-sm"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Bookmarks
+                    </Link>
+                    {dbUser?.role === 'ADMIN' && (
+                      <Link
+                        href="/admin"
+                        className="text-neutral-500 hover:text-neutral-800 transition-colors text-sm"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={async () => {
+                        setIsMobileMenuOpen(false);
+                        await signOut();
+                      }}
+                      className="text-error hover:text-error/80 transition-colors text-sm text-left"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsAuthModalOpen(true);
+                  }}
                   className="px-4 py-2 bg-primary hover:bg-primary-light text-neutral-50 rounded transition-colors text-sm w-fit"
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Sign In
-                </Link>
+                </button>
               )}
             </nav>
           </div>
         )}
       </div>
+      
+      <AuthModal 
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </header>
   );
 }

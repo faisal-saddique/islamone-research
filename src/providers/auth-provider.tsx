@@ -3,7 +3,6 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useAuth } from "~/hooks/use-auth";
 import { AuthErrorBoundary } from "~/components/auth/auth-error-boundary";
-import type { AuthUser } from "~/lib/auth/auth-service";
 
 type AuthContextType = ReturnType<typeof useAuth>;
 

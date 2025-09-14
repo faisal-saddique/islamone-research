@@ -1,12 +1,15 @@
-import { useEffect, useState, useCallback } from "react";
-import { AuthService, type AuthUser, type AuthError } from "~/lib/auth/auth-service";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { AuthService, type AuthUser } from "~/lib/auth/auth-service";
 import { api } from "~/trpc/react";
+import { useToast as useToastHook } from "~/hooks/use-toast";
 
 const authService = AuthService.getInstance();
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToastHook();
+  const previousUser = useRef<AuthUser | null>(null);
 
   // TRPC mutations for auth actions
   const createOrUpdateUser = api.user.createOrUpdate.useMutation();
@@ -14,7 +17,7 @@ export function useAuth() {
 
   // Get database user
   const { data: dbUser, refetch: refetchDbUser } = api.user.getByFirebaseUid.useQuery(
-    { firebaseUid: user?.uid! },
+    { firebaseUid: user?.uid ?? "" },
     { enabled: !!user?.uid }
   );
 
@@ -26,8 +29,8 @@ export function useAuth() {
       await createOrUpdateUser.mutateAsync({
         firebaseUid: authUser.uid,
         email: authUser.email,
-        displayName: authUser.displayName || undefined,
-        photoURL: authUser.photoURL || undefined,
+        displayName: authUser.displayName ?? undefined,
+        photoURL: authUser.photoURL ?? undefined,
         emailVerified: authUser.emailVerified,
       });
       
@@ -44,16 +47,30 @@ export function useAuth() {
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = authService.subscribeToAuthState((authUser) => {
+      const wasSignedOut = previousUser.current && !authUser;
+      const wasSignedIn = !previousUser.current && authUser;
+      
       setUser(authUser);
       setIsLoading(false);
       
       if (authUser) {
         void syncUser(authUser);
+        
+        // Show welcome toast on sign in (not on page refresh)
+        if (wasSignedIn) {
+          const name = authUser.displayName ?? authUser.email?.split('@')[0] ?? 'there';
+          toast.success(`Welcome back, ${name}!`);
+        }
+      } else if (wasSignedOut) {
+        // Show logout toast
+        toast.info("You've been signed out. See you next time!");
       }
+      
+      previousUser.current = authUser;
     });
 
     return unsubscribe;
-  }, [syncUser]);
+  }, [syncUser, toast]);
 
   // Auth actions
   const signIn = useCallback(async (email: string, password: string) => {

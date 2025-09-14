@@ -10,6 +10,10 @@ import pkg from 'pg';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { promisify } from 'util';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const { Client } = pkg;
 
@@ -19,13 +23,13 @@ const __dirname = dirname(__filename);
 
 // Database configurations
 const SQLITE_DB_PATH = join(__dirname, 'islamone_android.sqlite3');
-const PG_CONFIG = {
-  host: 'localhost',
-  port: 5432,
-  database: 'islamone-db',
-  user: 'islamone',
-  password: 'islamone',
-};
+
+// Parse PostgreSQL connection string from environment
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const DATABASE_URL = process.env.DATABASE_URL;
 
 /**
  * Promisify sqlite3 methods for async/await usage
@@ -307,9 +311,14 @@ async function main() {
 
     // Connect to PostgreSQL
     console.log('\n🐘 Connecting to PostgreSQL...');
-    pgClient = new Client(PG_CONFIG);
+    pgClient = new Client({
+      connectionString: DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
     await pgClient.connect();
-    console.log(`✓ Connected to PostgreSQL: ${PG_CONFIG.database}`);
+    console.log(`✓ Connected to PostgreSQL using DATABASE_URL`);
 
     // Verify database is ready
     console.log('\n🔍 Verifying database readiness...');

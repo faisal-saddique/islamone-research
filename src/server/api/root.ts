@@ -1,5 +1,6 @@
 import { quranRouter } from "~/server/api/routers/post";
 import { userRouter } from "~/server/api/routers/user";
+import { dashboardRouter } from "~/server/api/routers/dashboard";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 export const appRouter = createTRPCRouter({
   quran: quranRouter,
   user: userRouter,
+  dashboard: dashboardRouter,
 });
 
 // export type definition of API
