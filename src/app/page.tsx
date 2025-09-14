@@ -1,8 +1,14 @@
 import { LatestSurah } from "~/app/_components/surah";
 import { api, HydrateClient } from "~/trpc/server";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
-  void api.quran.getSurahs.prefetch({ limit: 3 });
+  try {
+    void api.quran.getSurahs.prefetch({ limit: 3 });
+  } catch (error) {
+    console.warn("Failed to prefetch data:", error);
+  }
 
   return (
     <HydrateClient>

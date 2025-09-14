@@ -7,8 +7,14 @@ export const metadata: Metadata = {
   description: "Browse and study the Holy Quran",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function Quran() {
-  void api.quran.getSurahs.prefetch({ limit: 114 });
+  try {
+    void api.quran.getSurahs.prefetch({ limit: 114 });
+  } catch (error) {
+    console.warn("Failed to prefetch Quran data:", error);
+  }
 
   return (
     <HydrateClient>
