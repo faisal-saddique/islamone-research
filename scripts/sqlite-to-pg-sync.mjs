@@ -23,7 +23,6 @@ const __dirname = dirname(__filename);
 
 // Database configurations
 const SQLITE_DB_PATH = join(__dirname, 'islamone_android.sqlite3');
-const IOS_DB_PATH = join(__dirname, 'islamone_ios_ayah_table.sqlite3');
 
 // Parse PostgreSQL connection string from environment
 if (!process.env.DATABASE_URL) {
@@ -31,6 +30,17 @@ if (!process.env.DATABASE_URL) {
 }
 
 const DATABASE_URL = process.env.DATABASE_URL;
+
+// Parse DATABASE_URL to determine connection settings
+const url = new URL(DATABASE_URL);
+const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+// Configure SSL settings based on connection type
+const sslConfig = isLocalhost
+  ? false  // No SSL for localhost
+  : {
+      rejectUnauthorized: false  // Accept self-signed certificates for remote
+    };
 
 /**
  * Promisify sqlite3 methods for async/await usage
@@ -300,91 +310,6 @@ async function copyTableData(sqliteDb, pgClient, tableName) {
   }
 }
 
-/**
- * Sync AyahTextIndoPakForIOS column from iOS database to PostgreSQL
- */
-async function syncIndoPakColumn(pgClient) {
-  let iosConnection;
-
-  try {
-    console.log('\n📱 Syncing IndoPak column from iOS database...');
-
-    // Check if iOS database exists
-    try {
-      const sqlite = sqlite3.verbose();
-      iosConnection = new sqlite.Database(IOS_DB_PATH);
-      const iosDb = promisifyDb(iosConnection);
-      console.log('✓ Connected to iOS database');
-
-      // Get IndoPak data from iOS database
-      const iosData = await iosDb.all(`
-        SELECT Id, SurahNumber, AyahNumber, AyahTextIndoPakForIOS
-        FROM ayah
-        WHERE AyahTextIndoPakForIOS IS NOT NULL
-        ORDER BY Id
-      `);
-
-      console.log(`✓ Found ${iosData.length} rows with IndoPak text in iOS database`);
-
-      if (iosData.length > 0) {
-        console.log('  Updating PostgreSQL with IndoPak data...');
-
-        await pgClient.query('BEGIN');
-
-        let updatedCount = 0;
-        const batchSize = 1000;
-
-        for (let i = 0; i < iosData.length; i += batchSize) {
-          const batch = iosData.slice(i, i + batchSize);
-
-          for (const row of batch) {
-            const result = await pgClient.query(`
-              UPDATE "ayah"
-              SET "AyahTextIndoPakForIOS" = $1
-              WHERE "Id" = $2
-            `, [row.AyahTextIndoPakForIOS, row.Id]);
-
-            if (result.rowCount > 0) {
-              updatedCount++;
-            }
-          }
-
-          if ((i + batchSize) % 2000 === 0 || (i + batchSize) >= iosData.length) {
-            console.log(`    Updated ${Math.min(i + batchSize, iosData.length)}/${iosData.length} rows...`);
-          }
-        }
-
-        await pgClient.query('COMMIT');
-        console.log(`  ✓ Updated ${updatedCount} rows with IndoPak text`);
-
-        // Verify the update
-        const verifyResult = await pgClient.query(`
-          SELECT COUNT(*) as count
-          FROM "ayah"
-          WHERE "AyahTextIndoPakForIOS" IS NOT NULL
-        `);
-
-        console.log(`  ✓ PostgreSQL now has ${verifyResult.rows[0].count} rows with IndoPak text`);
-      }
-
-    } catch (iosError) {
-      console.log(`  ⚠️  iOS database not found or error: ${iosError.message}`);
-      console.log('  Skipping IndoPak column sync');
-    }
-
-  } catch (error) {
-    console.error(`  ❌ Error syncing IndoPak column: ${error.message}`);
-    try {
-      await pgClient.query('ROLLBACK');
-    } catch (rollbackError) {
-      // Ignore rollback errors
-    }
-  } finally {
-    if (iosConnection) {
-      iosConnection.close();
-    }
-  }
-}
 
 /**
  * Verify PostgreSQL connection and database readiness
@@ -437,12 +362,10 @@ async function main() {
     console.log(`✓ Connected to SQLite: ${SQLITE_DB_PATH}`);
 
     // Connect to PostgreSQL with optimized settings
-    console.log('\n🐘 Connecting to PostgreSQL...');
+    console.log(`\n🐘 Connecting to PostgreSQL (${isLocalhost ? 'localhost' : 'remote'})...`);
     pgClient = new Client({
       connectionString: DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      },
+      ssl: sslConfig,
       // Optimize connection settings for bulk operations
       statement_timeout: 300000, // 5 minutes
       query_timeout: 300000,
@@ -518,8 +441,6 @@ async function main() {
       }
     }
 
-    // Sync IndoPak column from iOS database
-    await syncIndoPakColumn(pgClient);
 
     console.log('\n✅ Database sync completed successfully!');
     console.log('   Your PostgreSQL database now contains the latest SQLite data.');

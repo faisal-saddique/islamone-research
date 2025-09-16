@@ -73,6 +73,7 @@ CREATE TABLE "public"."ayah" (
     "AyahTextMuhammadi" TEXT,
     "AyahTextPdms" TEXT,
     "AyahTextPlain" TEXT,
+    "AyahTextIndoPakForIOS" TEXT,
     "SurahName" TEXT,
     "Ruku" INTEGER,
     "Sajda" INTEGER,
