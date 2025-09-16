@@ -7,6 +7,8 @@ import { Scheherazade_New } from "next/font/google";
 import { TRPCReactProvider } from "~/trpc/react";
 import { AuthProvider } from "~/providers/auth-provider";
 import { ToastProvider } from "~/contexts/toast-context";
+import { FontProvider } from "~/contexts/font-context";
+import { FontPreloader } from "~/components/font-preloader";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
 import { ToastContainer } from "~/components/ui/toast";
@@ -28,6 +30,7 @@ const scheherazadeNew = Scheherazade_New({
   weight: ["400", "500", "600", "700"],
 });
 
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -37,12 +40,15 @@ export default function RootLayout({
         <TRPCReactProvider>
           <ToastProvider>
             <AuthProvider>
-              <Header />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-              <ToastContainer />
+              <FontProvider>
+                <FontPreloader />
+                <Header />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+                <ToastContainer />
+              </FontProvider>
             </AuthProvider>
           </ToastProvider>
         </TRPCReactProvider>

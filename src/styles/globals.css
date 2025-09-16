@@ -1,5 +1,37 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Qalam';
+  src: url('/fonts/qalam.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'IndoPak';
+  src: url('/fonts/indopak.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Muhammadi';
+  src: url('/fonts/muhammadi.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'PDMS';
+  src: url('/fonts/pdms.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 :root {
   /* Colors - Primary */
   --primary: #20B2AA;
@@ -20,7 +52,8 @@
 
   /* Typography - Fonts */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-arabic: var(--font-scheherazade), 'Arabic Typesetting', 'Traditional Arabic', serif;
+  --font-arabic: var(--font-arabic-active, var(--font-scheherazade)), 'Arabic Typesetting', 'Traditional Arabic', serif;
+  --font-arabic-active: var(--font-scheherazade);
   
   /* Typography - Sizes */
   --text-sm: 0.875rem;

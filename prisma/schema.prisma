@@ -50,21 +50,22 @@ model ahsanulbayan {
 }
 
 model ayah {
-  Id                Int     @id
-  SurahNumber       Int?
-  AyahNumber        Int?
-  AyahTextQalam     String?
-  AyahTextMuhammadi String?
-  AyahTextPdms      String?
-  AyahTextPlain     String?
-  SurahName         String?
-  Ruku              Int?
-  Sajda             Int?
-  ParahNumber       Int?
-  RukuParahNumber   Int?
-  RukuSurahNumber   String?
-  WordsNazar        String?
-  WordsHashmi       String?
+  Id                    Int     @id
+  SurahNumber           Int?
+  AyahNumber            Int?
+  AyahTextQalam         String?
+  AyahTextMuhammadi     String?
+  AyahTextPdms          String?
+  AyahTextPlain         String?
+  AyahTextIndoPakForIOS String?
+  SurahName             String?
+  Ruku                  Int?
+  Sajda                 Int?
+  ParahNumber           Int?
+  RukuParahNumber       Int?
+  RukuSurahNumber       String?
+  WordsNazar            String?
+  WordsHashmi           String?
 }
 
 model bayanulquran {

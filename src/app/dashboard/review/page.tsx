@@ -5,11 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { useAuthContext } from "~/providers/auth-provider";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
+import { useFont } from "~/contexts/font-context";
 
 function ReviewPageContent() {
   const { user, dbUser } = useAuthContext();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { getAyahText } = useFont();
 
   const surahParam = searchParams.get("surah");
   const ayahParam = searchParams.get("ayah");
@@ -230,7 +232,7 @@ function ReviewPageContent() {
                     Surah {currentSurah}, Ayah {currentAyah}
                   </h3>
                   <div className="arabic-text text-2xl text-neutral-800 mb-4">
-                    {contentForReview.ayah.AyahTextMuhammadi ?? contentForReview.ayah.AyahTextQalam ?? contentForReview.ayah.AyahTextPlain}
+                    {getAyahText(contentForReview.ayah)}
                   </div>
                 </div>
               )}

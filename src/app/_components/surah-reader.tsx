@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "~/trpc/react";
+import { useFont } from "~/contexts/font-context";
 
 interface SurahReaderProps {
   surahNumber: number;
@@ -8,6 +9,7 @@ interface SurahReaderProps {
 
 export function SurahReader({ surahNumber }: SurahReaderProps) {
   const [ayahs] = api.quran.getAyahs.useSuspenseQuery({ surahNumber });
+  const { getAyahText } = useFont();
 
   return (
     <div className="space-y-6">
@@ -22,7 +24,7 @@ export function SurahReader({ surahNumber }: SurahReaderProps) {
             </div>
             <div className="flex-1 space-y-4">
               <div className="arabic-text text-xl text-neutral-800">
-                {ayah.AyahTextMuhammadi ?? ayah.AyahTextQalam ?? ayah.AyahTextPlain}
+                {getAyahText(ayah)}
               </div>
               {ayah.Translation && (
                 <div className="text-neutral-700 leading-relaxed">

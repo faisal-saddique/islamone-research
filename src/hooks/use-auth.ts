@@ -10,6 +10,7 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToastHook();
   const previousUser = useRef<AuthUser | null>(null);
+  const hasInitialized = useRef(false);
 
   // TRPC mutations for auth actions
   const createOrUpdateUser = api.user.createOrUpdate.useMutation();
@@ -48,15 +49,15 @@ export function useAuth() {
   useEffect(() => {
     const unsubscribe = authService.subscribeToAuthState((authUser) => {
       const wasSignedOut = previousUser.current && !authUser;
-      const wasSignedIn = !previousUser.current && authUser;
-      
+      const wasSignedIn = !previousUser.current && authUser && hasInitialized.current;
+
       setUser(authUser);
       setIsLoading(false);
-      
+
       if (authUser) {
         void syncUser(authUser);
-        
-        // Show welcome toast on sign in (not on page refresh)
+
+        // Show welcome toast only on actual sign in (not on page refresh/reload)
         if (wasSignedIn) {
           const name = authUser.displayName ?? authUser.email?.split('@')[0] ?? 'there';
           toast.success(`Welcome back, ${name}!`);
@@ -65,8 +66,9 @@ export function useAuth() {
         // Show logout toast
         toast.info("You've been signed out. See you next time!");
       }
-      
+
       previousUser.current = authUser;
+      hasInitialized.current = true;
     });
 
     return unsubscribe;
