@@ -1,4 +1,5 @@
-import { quranRouter } from "~/server/api/routers/post";
+import { quranRouter } from "~/server/api/routers/quran";
+import { hadithRouter } from "~/server/api/routers/hadith";
 import { userRouter } from "~/server/api/routers/user";
 import { dashboardRouter } from "~/server/api/routers/dashboard";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   quran: quranRouter,
+  hadith: hadithRouter,
   user: userRouter,
   dashboard: dashboardRouter,
 });

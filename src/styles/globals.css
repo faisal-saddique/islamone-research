@@ -54,6 +54,8 @@
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-arabic: var(--font-arabic-active, var(--font-scheherazade)), 'Arabic Typesetting', 'Traditional Arabic', serif;
   --font-arabic-active: var(--font-scheherazade);
+  --font-urdu: var(--font-urdu-active, var(--font-noto-nastaliq-urdu)), 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+  --font-urdu-active: var(--font-noto-nastaliq-urdu);
   
   /* Typography - Sizes */
   --text-sm: 0.875rem;
@@ -77,6 +79,7 @@
 @theme {
   --font-sans: var(--font-inter), var(--font-primary);
   --font-arabic: var(--font-arabic);
+  --font-urdu: var(--font-urdu);
   
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
@@ -115,4 +118,14 @@
   direction: rtl;
   text-align: right;
   line-height: 1.8;
+}
+
+/* Urdu text styling */
+.urdu-text {
+  font-family: var(--font-urdu);
+  font-feature-settings: "liga" on, "calt" on;
+  direction: rtl;
+  text-align: right;
+  line-height: 1.8;
+  font-weight: 400;
 }

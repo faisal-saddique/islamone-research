@@ -3,6 +3,8 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Scheherazade_New } from "next/font/google";
+import { Noto_Nastaliq_Urdu } from "next/font/google";
+import { Gulzar } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { AuthProvider } from "~/providers/auth-provider";
@@ -30,12 +32,24 @@ const scheherazadeNew = Scheherazade_New({
   weight: ["400", "500", "600", "700"],
 });
 
+const notoNastaliqUrdu = Noto_Nastaliq_Urdu({
+  subsets: ["arabic", "latin"],
+  variable: "--font-noto-nastaliq-urdu",
+  weight: ["400", "500", "600", "700"],
+});
+
+const gulzar = Gulzar({
+  subsets: ["arabic", "latin"],
+  variable: "--font-gulzar",
+  weight: ["400"],
+});
+
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${scheherazadeNew.variable}`}>
+    <html lang="en" className={`${inter.variable} ${scheherazadeNew.variable} ${notoNastaliqUrdu.variable} ${gulzar.variable}`}>
       <body className="bg-neutral-100 min-h-screen flex flex-col">
         <TRPCReactProvider>
           <ToastProvider>

@@ -58,9 +58,18 @@ export const quranRouter = createTRPCRouter({
         orderBy: { AyahNumber: "asc" },
         select: {
           AyahNumber: true,
+          // English translations
           SaheehInternational: true,
           YousufAli: true,
           Pickthall: true,
+          MaududiEn: true,
+          // Urdu translations
+          Maududi: true,
+          Jalandhary: true,
+          Junagarhi: true,
+          Taqi: true,
+          AhmadRaza: true,
+          TahirulQadri: true,
         },
       });
 
@@ -70,7 +79,27 @@ export const quranRouter = createTRPCRouter({
         );
         return {
           ...ayah,
+          // English translation (primary)
           Translation: translation?.SaheehInternational ?? translation?.YousufAli ?? translation?.Pickthall,
+          // Urdu translation
+          UrduTranslation: translation?.Maududi ?? translation?.Jalandhary ?? translation?.Junagarhi ?? translation?.Taqi,
+          // All available translations for future use
+          AllTranslations: {
+            english: {
+              saheeh: translation?.SaheehInternational,
+              yousufAli: translation?.YousufAli,
+              pickthall: translation?.Pickthall,
+              maududi: translation?.MaududiEn,
+            },
+            urdu: {
+              maududi: translation?.Maududi,
+              jalandhary: translation?.Jalandhary,
+              junagarhi: translation?.Junagarhi,
+              taqi: translation?.Taqi,
+              ahmadRaza: translation?.AhmadRaza,
+              tahirulQadri: translation?.TahirulQadri,
+            }
+          }
         };
       });
 
