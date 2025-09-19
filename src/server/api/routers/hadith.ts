@@ -12,7 +12,7 @@ const HadithCollectionSchema = z.enum([
 ]);
 
 export const hadithRouter = createTRPCRouter({
-  getCollections: publicProcedure.query(async ({ ctx }) => {
+  getCollections: publicProcedure.query(async () => {
     const collections = [
       {
         id: "bukhari",
@@ -67,9 +67,7 @@ export const hadithRouter = createTRPCRouter({
       limit: z.number().optional().default(50)
     }))
     .query(async ({ ctx, input }) => {
-      const tableName = `${input.collection}chapters`;
-
-      let chapters;
+      let chapters: Array<{ Id: number; Topic: string | null; HadithCount?: number | null }>;
 
       switch (input.collection) {
         case "bukhari":
@@ -123,7 +121,7 @@ export const hadithRouter = createTRPCRouter({
       offset: z.number().optional().default(0)
     }))
     .query(async ({ ctx, input }) => {
-      let hadiths;
+      let hadiths: Array<{ Id: number; HadithNumber: number | null; Arabic?: string | null; English?: string | null; Urdu?: string | null; Sanad?: string | null; ChapterId: number; Chapter?: string | null }>;
 
       switch (input.collection) {
         case "bukhari":
@@ -187,7 +185,7 @@ export const hadithRouter = createTRPCRouter({
       hadithNumber: z.number()
     }))
     .query(async ({ ctx, input }) => {
-      let hadith;
+      let hadith: { Id: number; HadithNumber: number | null; Arabic?: string | null; English?: string | null; Urdu?: string | null; Sanad?: string | null; ChapterId: number; Chapter?: string | null } | null;
 
       switch (input.collection) {
         case "bukhari":

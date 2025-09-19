@@ -116,7 +116,7 @@
   font-family: var(--font-arabic);
   font-feature-settings: "liga" on, "calt" on;
   direction: rtl;
-  text-align: right;
+  text-align: center;
   line-height: 1.8;
 }
 

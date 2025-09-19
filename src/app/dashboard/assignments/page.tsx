@@ -3,269 +3,275 @@
 import Link from "next/link";
 import { useAuthContext } from "~/providers/auth-provider";
 import { api } from "~/trpc/react";
+import { LoadingState } from "~/app/_components/common/loading-state";
+import { ErrorState } from "~/app/_components/common/error-state";
+import { StatCard } from "~/app/_components/common/stat-card";
+import { QuickActionCard } from "~/app/_components/common/quick-action-card";
+import { CheckCircle, TrendingUp, BookOpen, Play, ArrowRight, Calendar } from "lucide-react";
 
 export default function AssignmentsPage() {
   const { user, dbUser } = useAuthContext();
 
-  const { data: assignedContent } = api.dashboard.getAssignedContent.useQuery(
+  const { data: assignedContent, isLoading } = api.dashboard.getAssignedContent.useQuery(
     { firebaseUid: user?.uid ?? "" },
     { enabled: !!user?.uid }
   );
 
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   if (!user || !dbUser) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300 text-center">
-          <h2 className="text-xl font-semibold text-neutral-800 mb-2">
-            Access Denied
-          </h2>
-          <p className="text-neutral-500">
-            Please sign in to view your assignments.
-          </p>
-        </div>
-      </div>
+      <ErrorState
+        title="Access Denied"
+        description="Please sign in to view your assignments."
+        actionText="Sign In"
+        onAction={() => window.location.href = "/"}
+      />
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-neutral-800 mb-2">
-          Your Assignments
-        </h1>
-        <p className="text-neutral-500">
-          View your assigned content and track your progress
-        </p>
-      </div>
-
-      {assignedContent ? (
-        <div className="space-y-8">
-          {/* Progress Overview */}
-          {assignedContent.progress && (
-            <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-              <h2 className="text-lg font-semibold text-neutral-800 mb-4">
-                Overall Progress
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <p className="text-2xl font-semibold text-primary">
-                    {assignedContent.progress.totalReviews}
-                  </p>
-                  <p className="text-sm text-neutral-500">Total Reviews</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-semibold text-success">
-                    {assignedContent.progress.approvedReviews}
-                  </p>
-                  <p className="text-sm text-neutral-500">Approved</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-semibold text-warning">
-                    {assignedContent.progress.currentStreak}
-                  </p>
-                  <p className="text-sm text-neutral-500">Current Streak</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-semibold text-error">
-                    {assignedContent.progress.longestStreak}
-                  </p>
-                  <p className="text-sm text-neutral-500">Best Streak</p>
-                </div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-primary-subtle">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-white" />
             </div>
-          )}
+            <h1 className="text-3xl font-bold text-gray-900">Your Assignments</h1>
+          </div>
+          <p className="text-gray-600 text-lg">
+            Track your progress and continue your translation review work
+          </p>
+        </div>
 
-          {/* Assigned Surahs */}
-          <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-neutral-800">
-                Assigned Surahs
-              </h2>
-              <span className="px-3 py-1 bg-primary text-neutral-50 rounded text-sm">
-                {assignedContent.assignedSurahs.length} surahs assigned
-              </span>
-            </div>
-
-            {assignedContent.assignedSurahs.length > 0 ? (
-              <div className="grid gap-4">
-                {assignedContent.assignedSurahs.map((surah) => {
-                  // Calculate progress for this surah
-                  const reviewedInThisSurah = assignedContent.reviewedAyahs.filter(
-                    r => r.surahNumber === surah.SurahNumber
-                  );
-                  const uniqueAyahsReviewed = new Set(
-                    reviewedInThisSurah.map(r => r.ayahNumber)
-                  ).size;
-                  const totalAyahs = surah.AyahCount;
-                  const progressPercentage = (uniqueAyahsReviewed / totalAyahs) * 100;
-
-                  return (
-                    <div
-                      key={surah.Id}
-                      className="bg-neutral-100 rounded-lg p-6 border border-neutral-200"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-primary text-neutral-50 rounded-full flex items-center justify-center text-lg font-semibold">
-                            {surah.SurahNumber}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-neutral-800">
-                              {surah.NameEnglish}
-                            </h3>
-                            <p className="text-neutral-500">{surah.NameMeaning}</p>
-                            <p className="text-sm text-neutral-400">
-                              {surah.AyahCount} verses • {surah.Type}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="arabic-text text-2xl text-neutral-800 font-medium mb-1">
-                            {surah.NameArabic}
-                          </div>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            progressPercentage === 100 
-                              ? 'bg-success text-neutral-50' 
-                              : progressPercentage > 0 
-                              ? 'bg-warning text-neutral-800' 
-                              : 'bg-neutral-300 text-neutral-700'
-                          }`}>
-                            {progressPercentage === 100 
-                              ? 'Completed' 
-                              : progressPercentage > 0 
-                              ? 'In Progress' 
-                              : 'Not Started'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <div className="flex justify-between text-sm text-neutral-600 mb-2">
-                          <span>Progress</span>
-                          <span>
-                            {uniqueAyahsReviewed} / {totalAyahs} verses reviewed
-                            ({reviewedInThisSurah.length} total reviews)
-                          </span>
-                        </div>
-                        <div className="w-full bg-neutral-200 rounded-full h-3">
-                          <div
-                            className="bg-primary h-3 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                          />
-                        </div>
-                        <div className="text-xs text-neutral-500 mt-1">
-                          {progressPercentage.toFixed(1)}% complete
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3">
-                        <Link
-                          href={`/dashboard/review?surah=${surah.SurahNumber}`}
-                          className="px-4 py-2 bg-primary text-neutral-50 rounded hover:bg-primary-light transition-colors text-sm"
-                        >
-                          {progressPercentage > 0 ? 'Continue' : 'Start'} Reviewing
-                        </Link>
-                        <Link
-                          href={`/quran/${surah.SurahNumber}`}
-                          className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition-colors text-sm"
-                        >
-                          Read Surah
-                        </Link>
-                      </div>
-
-                      {/* Recent Activity */}
-                      {reviewedInThisSurah.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-neutral-200">
-                          <p className="text-sm text-neutral-600 mb-2">Recent Reviews:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {reviewedInThisSurah
-                              .slice(-10) // Show last 10 reviews
-                              .map((review, index) => (
-                                <span
-                                  key={index}
-                                  className="px-2 py-1 bg-neutral-200 text-neutral-600 rounded text-xs"
-                                >
-                                  {review.ayahNumber}:{review.translationSource.substring(0, 3)}
-                                </span>
-                              ))}
-                            {reviewedInThisSurah.length > 10 && (
-                              <span className="px-2 py-1 bg-neutral-300 text-neutral-500 rounded text-xs">
-                                +{reviewedInThisSurah.length - 10} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <svg className="w-16 h-16 text-neutral-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-2">
-                  No Assignments Yet
-                </h3>
-                <p className="text-neutral-500 mb-4">
-                  You haven&apos;t been assigned any content to review yet.
-                </p>
-                <p className="text-sm text-neutral-400">
-                  Contact an administrator to get started with translation reviews.
-                </p>
+        {assignedContent ? (
+          <div className="space-y-8">
+            {/* Progress Stats */}
+            {assignedContent.progress && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Reviews"
+                  value={assignedContent.progress.totalReviews}
+                  subtitle="All time"
+                  icon={CheckCircle}
+                  color="primary"
+                />
+                <StatCard
+                  title="Approved Reviews"
+                  value={assignedContent.progress.approvedReviews}
+                  subtitle="Quality score"
+                  icon={CheckCircle}
+                  color="success"
+                />
+                <StatCard
+                  title="Current Streak"
+                  value={assignedContent.progress.currentStreak}
+                  subtitle="Days active"
+                  icon={TrendingUp}
+                  color="warning"
+                />
+                <StatCard
+                  title="Best Streak"
+                  value={assignedContent.progress.longestStreak}
+                  subtitle="Personal record"
+                  icon={TrendingUp}
+                  color="error"
+                />
               </div>
             )}
-          </div>
 
-          {/* Quick Actions */}
-          <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link
-                href="/dashboard/review"
-                className="p-4 bg-primary text-neutral-50 rounded-lg hover:bg-primary-light transition-colors text-center"
-              >
-                <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-                <p className="font-medium">Start Reviewing</p>
-                <p className="text-sm opacity-90">Begin reviewing translations</p>
-              </Link>
-              
-              <Link
-                href="/dashboard"
-                className="p-4 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors text-center"
-              >
-                <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H9a2 2 0 01-2-2z" />
-                </svg>
-                <p className="font-medium">Dashboard</p>
-                <p className="text-sm">View your dashboard</p>
-              </Link>
-              
-              <Link
-                href="/quran"
-                className="p-4 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors text-center"
-              >
-                <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <p className="font-medium">Browse Quran</p>
-                <p className="text-sm">Read the Holy Quran</p>
-              </Link>
+            {/* Assigned Surahs */}
+            <div className="bg-white rounded-2xl p-8 border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">Assigned Surahs</h2>
+                <div className="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium">
+                  {assignedContent.assignedSurahs.length} surahs assigned
+                </div>
+              </div>
+
+              {assignedContent.assignedSurahs.length > 0 ? (
+                <div className="grid gap-6">
+                  {assignedContent.assignedSurahs.map((surah) => {
+                    // Calculate progress for this surah
+                    const reviewedInThisSurah = assignedContent.reviewedAyahs.filter(
+                      r => r.surahNumber === surah.SurahNumber
+                    );
+                    const uniqueAyahsReviewed = new Set(
+                      reviewedInThisSurah.map(r => r.ayahNumber)
+                    ).size;
+                    const totalAyahs = surah.AyahCount;
+                    const progressPercentage = (uniqueAyahsReviewed / totalAyahs) * 100;
+
+                    return (
+                      <div
+                        key={surah.Id}
+                        className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center text-lg font-bold text-white">
+                              {surah.SurahNumber}
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                                {surah.NameEnglish}
+                              </h3>
+                              <p className="text-gray-600 mb-1">{surah.NameMeaning}</p>
+                              <p className="text-sm text-gray-500">
+                                {surah.AyahCount} verses • {surah.Type}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="arabic-text text-2xl text-primary font-medium mb-2">
+                              {surah.NameArabic}
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              progressPercentage === 100
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : progressPercentage > 0
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {progressPercentage === 100
+                                ? 'Completed'
+                                : progressPercentage > 0
+                                ? 'In Progress'
+                                : 'Not Started'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mb-6">
+                          <div className="flex justify-between text-sm text-gray-600 mb-2">
+                            <span className="font-medium">Progress</span>
+                            <span>
+                              {uniqueAyahsReviewed} / {totalAyahs} verses
+                              ({reviewedInThisSurah.length} reviews)
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-primary to-primary-light h-3 rounded-full transition-all duration-700 ease-out"
+                              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                            />
+                          </div>
+                          <div className="text-sm font-medium text-primary mt-2">
+                            {progressPercentage.toFixed(1)}% complete
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 mb-4">
+                          <Link
+                            href={`/dashboard/review?surah=${surah.SurahNumber}`}
+                            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors font-medium"
+                          >
+                            <Play className="w-4 h-4" />
+                            {progressPercentage > 0 ? 'Continue' : 'Start'} Reviewing
+                          </Link>
+                          <Link
+                            href={`/quran/${surah.SurahNumber}`}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                            Read Surah
+                          </Link>
+                        </div>
+
+                        {/* Recent Activity */}
+                        {reviewedInThisSurah.length > 0 && (
+                          <div className="pt-4 border-t border-gray-200">
+                            <p className="text-sm font-medium text-gray-700 mb-3">Recent Reviews:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {reviewedInThisSurah
+                                .slice(-8)
+                                .map((review, index) => (
+                                  <span
+                                    key={index}
+                                    className="px-3 py-1 bg-white text-gray-600 rounded-lg text-sm font-medium border border-gray-200"
+                                  >
+                                    {review.ayahNumber}:{review.translationSource.substring(0, 3)}
+                                  </span>
+                                ))}
+                              {reviewedInThisSurah.length > 8 && (
+                                <span className="px-3 py-1 bg-gray-200 text-gray-500 rounded-lg text-sm font-medium">
+                                  +{reviewedInThisSurah.length - 8} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    No Assignments Yet
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    You haven&apos;t been assigned any content to review yet. Contact an administrator to get started with translation reviews.
+                  </p>
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors font-medium"
+                  >
+                    Go to Dashboard
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <QuickActionCard
+                  title="Start Reviewing"
+                  description="Begin reviewing translations and earn progress points"
+                  icon={CheckCircle}
+                  href="/dashboard/review"
+                  color="primary"
+                />
+                <QuickActionCard
+                  title="Dashboard"
+                  description="View your complete dashboard and statistics"
+                  icon={TrendingUp}
+                  href="/dashboard"
+                  color="secondary"
+                />
+                <QuickActionCard
+                  title="Browse Quran"
+                  description="Read and study the Holy Quran with translations"
+                  icon={BookOpen}
+                  href="/quran"
+                  color="accent"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300 text-center">
-          <p className="text-neutral-500">Loading your assignments...</p>
-        </div>
-      )}
+        ) : (
+          <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+            <div className="animate-pulse">
+              <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4"></div>
+              <div className="h-4 w-48 bg-gray-100 rounded mx-auto mb-2"></div>
+              <div className="h-4 w-32 bg-gray-100 rounded mx-auto"></div>
+            </div>
+            <p className="text-gray-500 mt-4">Loading your assignments...</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

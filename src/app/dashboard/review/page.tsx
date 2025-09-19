@@ -6,6 +6,20 @@ import { useAuthContext } from "~/providers/auth-provider";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
 import { useFont } from "~/contexts/font-context";
+import { LoadingState } from "~/app/_components/common/loading-state";
+import { ErrorState } from "~/app/_components/common/error-state";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Star,
+  MessageSquare,
+  Send,
+  BookOpen,
+  Target
+} from "lucide-react";
 
 function ReviewPageContent() {
   const { user, dbUser } = useAuthContext();
@@ -114,7 +128,7 @@ function ReviewPageContent() {
     return translations[source] ?? "";
   };
 
-  const availableTranslations = contentForReview?.translations ? 
+  const availableTranslations = contentForReview?.translations ?
     Object.entries(contentForReview.translations)
       .filter(([key, value]) => value && key !== "Id" && key !== "SurahNumber" && key !== "AyahNumber")
       .map(([key, value]) => ({ key, value: value as string }))
@@ -126,261 +140,295 @@ function ReviewPageContent() {
 
   if (!user || !dbUser) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300 text-center">
-          <h2 className="text-xl font-semibold text-neutral-800 mb-2">
-            Access Denied
-          </h2>
-          <p className="text-neutral-500">
-            Please sign in to access the review interface.
-          </p>
-        </div>
-      </div>
+      <ErrorState
+        title="Access Denied"
+        description="Please sign in to access the review interface."
+        actionText="Sign In"
+        onAction={() => window.location.href = "/"}
+      />
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-neutral-800 mb-2">
-          Translation Review
-        </h1>
-        <p className="text-neutral-500">
-          Review translations and provide feedback to improve accuracy
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Navigation Panel */}
-        <div className="lg:col-span-1">
-          <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4">
-              Navigation
-            </h2>
-            
-            {/* Surah Selection */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Surah
-              </label>
-              <select
-                value={currentSurah}
-                onChange={(e) => {
-                  setCurrentSurah(parseInt(e.target.value));
-                  setCurrentAyah(1);
-                }}
-                className="w-full p-2 border border-neutral-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {assignedContent?.assignedSurahs.map((surah) => (
-                  <option key={surah.Id} value={surah.SurahNumber}>
-                    {surah.SurahNumber}. {surah.NameEnglish}
-                  </option>
-                ))}
-              </select>
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-primary-subtle">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-white" />
             </div>
+            <h1 className="text-3xl font-bold text-gray-900">Translation Review</h1>
+          </div>
+          <p className="text-gray-600 text-lg">
+            Review translations and provide feedback to improve accuracy
+          </p>
+        </div>
 
-            {/* Ayah Selection */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Ayah
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentAyah(Math.max(1, currentAyah - 1))}
-                  disabled={currentAyah <= 1}
-                  className="px-3 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+          {/* Navigation Panel */}
+          <div className="xl:col-span-1">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200 sticky top-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Navigation
+              </h2>
+
+              {/* Surah Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Surah
+                </label>
+                <select
+                  value={currentSurah}
+                  onChange={(e) => {
+                    setCurrentSurah(parseInt(e.target.value));
+                    setCurrentAyah(1);
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
                 >
-                  ←
-                </button>
-                <input
-                  type="number"
-                  value={currentAyah}
-                  onChange={(e) => setCurrentAyah(parseInt(e.target.value) || 1)}
-                  min="1"
-                  max={assignedContent?.assignedSurahs.find(s => s.SurahNumber === currentSurah)?.AyahCount ?? 1}
-                  className="flex-1 p-2 border border-neutral-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent text-center"
-                />
-                <button
-                  onClick={() => setCurrentAyah(currentAyah + 1)}
-                  disabled={currentAyah >= (assignedContent?.assignedSurahs.find(s => s.SurahNumber === currentSurah)?.AyahCount ?? 0)}
-                  className="px-3 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  →
-                </button>
+                  {assignedContent?.assignedSurahs.map((surah) => (
+                    <option key={surah.Id} value={surah.SurahNumber}>
+                      {surah.SurahNumber}. {surah.NameEnglish}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            {/* Progress Info */}
-            {assignedContent && (
-              <div className="text-sm text-neutral-500">
-                <p>
-                  Total reviewed: {assignedContent.reviewedAyahs.filter(r => r.surahNumber === currentSurah).length} / {assignedContent.assignedSurahs.find(s => s.SurahNumber === currentSurah)?.AyahCount ?? 0}
-                </p>
+              {/* Ayah Navigation */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Ayah
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCurrentAyah(Math.max(1, currentAyah - 1))}
+                    disabled={currentAyah <= 1}
+                    className="p-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="number"
+                    value={currentAyah}
+                    onChange={(e) => setCurrentAyah(parseInt(e.target.value) || 1)}
+                    min="1"
+                    max={assignedContent?.assignedSurahs.find(s => s.SurahNumber === currentSurah)?.AyahCount ?? 1}
+                    className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-center bg-white"
+                  />
+                  <button
+                    onClick={() => setCurrentAyah(currentAyah + 1)}
+                    disabled={currentAyah >= (assignedContent?.assignedSurahs.find(s => s.SurahNumber === currentSurah)?.AyahCount ?? 0)}
+                    className="p-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress Info */}
+              {assignedContent && (
+                <div className="p-4 bg-primary-subtle rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">Progress</div>
+                  <div className="font-semibold text-gray-900">
+                    {assignedContent.reviewedAyahs.filter(r => r.surahNumber === currentSurah).length} / {assignedContent.assignedSurahs.find(s => s.SurahNumber === currentSurah)?.AyahCount ?? 0}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">verses reviewed</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Review Panel */}
+          <div className="xl:col-span-3">
+            {contentForReview ? (
+              <div className="space-y-6">
+                {/* Arabic Text */}
+                {contentForReview.ayah && (
+                  <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                    <div className="flex items-center gap-3 mb-6">
+                      <BookOpen className="w-6 h-6 text-primary" />
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Surah {currentSurah}, Ayah {currentAyah}
+                      </h3>
+                    </div>
+                    <div className="arabic-text text-3xl text-gray-800 leading-loose text-center p-6 bg-gray-50 rounded-lg">
+                      {getAyahText(contentForReview.ayah)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Translation Selection */}
+                <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                    Select Translation to Review
+                  </h3>
+                  <div className="space-y-4">
+                    {availableTranslations.map(({ key, value }) => (
+                      <label
+                        key={key}
+                        className={`block p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md ${
+                          selectedTranslation === key
+                            ? "border-primary bg-primary-subtle"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="translation"
+                          value={key}
+                          checked={selectedTranslation === key}
+                          onChange={(e) => setSelectedTranslation(e.target.value)}
+                          className="sr-only"
+                        />
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 mb-2">{key}</p>
+                            <p className="text-gray-700 leading-relaxed">{value}</p>
+                          </div>
+                          {contentForReview.existingReviews?.some(r => r.translationSource === key) && (
+                            <span className="ml-4 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                              Reviewed
+                            </span>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Review Form */}
+                {selectedTranslation && (
+                  <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                      Review {selectedTranslation} Translation
+                    </h3>
+
+                    {/* Review Status */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Review Status
+                      </label>
+                      <div className="flex gap-3">
+                        {[
+                          { value: "APPROVED", label: "Approved", color: "emerald", icon: CheckCircle },
+                          { value: "FLAGGED", label: "Flagged", color: "red", icon: AlertCircle },
+                          { value: "NEEDS_REVIEW", label: "Needs Review", color: "amber", icon: Clock },
+                        ].map(({ value, label, color, icon: Icon }) => (
+                          <label key={value} className="flex items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              value={value}
+                              checked={reviewStatus === value}
+                              onChange={(e) => setReviewStatus(e.target.value as "APPROVED" | "FLAGGED" | "NEEDS_REVIEW")}
+                              className="sr-only"
+                            />
+                            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                              reviewStatus === value
+                                ? `border-${color}-400 bg-${color}-50 text-${color}-700`
+                                : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            }`}>
+                              <Icon className="w-4 h-4" />
+                              <span className="font-medium">{label}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Confidence Level */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Confidence Level: {confidence}/10
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm text-gray-500">Low</span>
+                        <div className="flex-1 relative">
+                          <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            value={confidence}
+                            onChange={(e) => setConfidence(parseInt(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                          />
+                          <div className="flex justify-between text-xs text-gray-400 mt-1">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                              <span key={num}>{num}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-sm text-gray-500">High</span>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 text-amber-400" />
+                          <span className="text-sm font-medium text-gray-700">{confidence}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feedback */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        <MessageSquare className="w-4 h-4 inline mr-1" />
+                        Feedback (Optional)
+                      </label>
+                      <textarea
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        placeholder="Provide feedback about the translation..."
+                        className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                        rows={3}
+                      />
+                    </div>
+
+                    {/* Suggested Edit */}
+                    {reviewStatus === "FLAGGED" && (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Suggested Correction
+                        </label>
+                        <textarea
+                          value={suggestedEdit}
+                          onChange={(e) => setSuggestedEdit(e.target.value)}
+                          placeholder="Suggest a corrected translation..."
+                          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                          rows={2}
+                        />
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+                      {isReviewed && (
+                        <div className="flex items-center gap-2 text-amber-600">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">You have already reviewed this translation</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleSubmitReview}
+                        disabled={submitReviewMutation.isPending}
+                        className="ml-auto flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                      >
+                        <Send className="w-4 h-4" />
+                        {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+                <div className="animate-pulse">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4"></div>
+                  <div className="h-4 w-48 bg-gray-100 rounded mx-auto mb-2"></div>
+                  <div className="h-4 w-32 bg-gray-100 rounded mx-auto"></div>
+                </div>
+                <p className="text-gray-500 mt-4">Loading content for review...</p>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Review Panel */}
-        <div className="lg:col-span-2">
-          {contentForReview ? (
-            <div className="space-y-6">
-              {/* Arabic Text */}
-              {contentForReview.ayah && (
-                <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-                    Surah {currentSurah}, Ayah {currentAyah}
-                  </h3>
-                  <div className="arabic-text text-2xl text-neutral-800 mb-4">
-                    {getAyahText(contentForReview.ayah)}
-                  </div>
-                </div>
-              )}
-
-              {/* Translation Selection */}
-              <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-                <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-                  Select Translation to Review
-                </h3>
-                <div className="space-y-3">
-                  {availableTranslations.map(({ key, value }) => (
-                    <label
-                      key={key}
-                      className={`block p-4 border rounded cursor-pointer transition-colors ${
-                        selectedTranslation === key
-                          ? "border-primary bg-primary-subtle"
-                          : "border-neutral-200 hover:border-neutral-300"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="translation"
-                        value={key}
-                        checked={selectedTranslation === key}
-                        onChange={(e) => setSelectedTranslation(e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <p className="font-medium text-neutral-800 mb-1">{key}</p>
-                          <p className="text-neutral-700">{value}</p>
-                        </div>
-                        {contentForReview.existingReviews?.some(r => r.translationSource === key) && (
-                          <span className="ml-2 px-2 py-1 bg-success text-neutral-50 rounded text-xs">
-                            Reviewed
-                          </span>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Review Form */}
-              {selectedTranslation && (
-                <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300">
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-                    Review {selectedTranslation} Translation
-                  </h3>
-
-                  {/* Review Status */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Review Status
-                    </label>
-                    <div className="flex gap-3">
-                      {[
-                        { value: "APPROVED", label: "Approved", color: "success" },
-                        { value: "FLAGGED", label: "Flagged", color: "error" },
-                        { value: "NEEDS_REVIEW", label: "Needs Review", color: "warning" },
-                      ].map(({ value, label, color }) => (
-                        <label key={value} className="flex items-center">
-                          <input
-                            type="radio"
-                            name="status"
-                            value={value}
-                            checked={reviewStatus === value}
-                            onChange={(e) => setReviewStatus(e.target.value as "APPROVED" | "FLAGGED" | "NEEDS_REVIEW")}
-                            className="mr-2"
-                          />
-                          <span className={`px-2 py-1 rounded text-xs text-neutral-50 bg-${color}`}>
-                            {label}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Confidence Level */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Confidence Level: {confidence}/10
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={confidence}
-                      onChange={(e) => setConfidence(parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Feedback */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Feedback (Optional)
-                    </label>
-                    <textarea
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
-                      placeholder="Provide feedback about the translation..."
-                      className="w-full p-3 border border-neutral-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
-                      rows={3}
-                    />
-                  </div>
-
-                  {/* Suggested Edit */}
-                  {reviewStatus === "FLAGGED" && (
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
-                        Suggested Correction
-                      </label>
-                      <textarea
-                        value={suggestedEdit}
-                        onChange={(e) => setSuggestedEdit(e.target.value)}
-                        placeholder="Suggest a corrected translation..."
-                        className="w-full p-3 border border-neutral-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
-                        rows={2}
-                      />
-                    </div>
-                  )}
-
-                  {/* Submit Button */}
-                  <div className="flex justify-between items-center">
-                    {isReviewed && (
-                      <p className="text-sm text-warning">
-                        You have already reviewed this translation
-                      </p>
-                    )}
-                    <button
-                      onClick={handleSubmitReview}
-                      disabled={submitReviewMutation.isPending}
-                      className="px-6 py-2 bg-primary text-neutral-50 rounded hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
-                    >
-                      {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300 text-center">
-              <p className="text-neutral-500">
-                Loading content for review...
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -389,17 +437,7 @@ function ReviewPageContent() {
 
 export default function ReviewPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse">
-            <div className="h-8 w-48 bg-neutral-300 rounded mb-4"></div>
-            <div className="h-4 w-96 bg-neutral-200 rounded mb-2"></div>
-            <div className="h-4 w-72 bg-neutral-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingState />}>
       <ReviewPageContent />
     </Suspense>
   );

@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { HadithReader } from "~/app/_components/hadith-reader";
+import { HadithReader } from "~/app/_components/content/hadith-reader";
 import { api, HydrateClient } from "~/trpc/server";
 
 interface Props {
@@ -51,7 +51,7 @@ export default async function ChapterPage({ params }: Props) {
 
   try {
     void api.hadith.getHadithsByChapter.prefetch({
-      collection: collection as any,
+      collection: collection as 'bukhari' | 'muslim' | 'abudawood' | 'tirmidhi' | 'nasai' | 'ibnemaaja',
       chapterId: chapterNum,
       limit: 50
     });
