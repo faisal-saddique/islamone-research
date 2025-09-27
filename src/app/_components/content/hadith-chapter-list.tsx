@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { api } from "~/trpc/react";
-import { BookOpen, ArrowRight, Hash } from "lucide-react";
+import { BookOpen, ArrowRight } from "lucide-react";
 
 interface HadithChapterListProps {
   collection: string;
@@ -27,55 +27,48 @@ export function HadithChapterList({ collection }: HadithChapterListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="space-y-6">
       {chapters.map((chapter) => (
         <Link
           key={chapter.Id}
           href={`/hadith/${collection}/${chapter.Id}`}
-          className="group bg-gray-50 hover:bg-white rounded-xl p-6 border border-gray-200 hover:border-primary/30 hover:shadow-md transition-all duration-200"
+          className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-primary hover:shadow-lg transition-all duration-200 block"
         >
-          <div className="flex items-center gap-4">
-            {/* Chapter Number */}
-            <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl flex items-center justify-center font-bold shadow-sm group-hover:scale-105 transition-transform">
-              {chapter.Id}
-            </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              {/* Chapter Number */}
+              <div className="relative">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-lg">
+                    {chapter.Id}
+                  </span>
+                </div>
+              </div>
 
-            {/* Chapter Content */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1 leading-tight">
-                {chapter.Topic}
-              </h3>
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                {chapter.HadithCount && (
-                  <div className="flex items-center gap-1">
-                    <Hash className="w-4 h-4" />
-                    <span>{chapter.HadithCount} {chapter.HadithCount === 1 ? 'hadith' : 'hadith'}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1">
-                  <BookOpen className="w-4 h-4" />
+              {/* Chapter Details */}
+              <div className="flex-1">
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  {chapter.HadithCount && (
+                    <>
+                      <span>{chapter.HadithCount} hadith</span>
+                      <span>•</span>
+                    </>
+                  )}
                   <span>Chapter {chapter.Id}</span>
                 </div>
               </div>
             </div>
 
-            {/* Arrow */}
-            <div className="flex items-center gap-2 text-primary group-hover:text-primary-light transition-colors">
-              <span className="font-medium hidden sm:block">Read Chapter</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            {/* Arabic Text and Action */}
+            <div className="flex items-center gap-4">
+              <h3 className="text-xl font-semibold text-gray-800 group-hover:text-primary transition-colors urdu-text text-right">
+                {chapter.Topic}
+              </h3>
+              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
             </div>
           </div>
         </Link>
       ))}
-
-      {/* Summary Footer */}
-      <div className="mt-6 p-4 bg-primary-subtle rounded-xl">
-        <div className="text-center">
-          <p className="text-sm font-medium text-gray-700">
-            Total: <span className="text-primary font-semibold">{chapters.length}</span> chapters available
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

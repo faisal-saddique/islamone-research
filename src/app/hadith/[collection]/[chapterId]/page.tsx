@@ -1,6 +1,5 @@
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { HadithReader } from "~/app/_components/content/hadith-reader";
 import { api, HydrateClient } from "~/trpc/server";
 
@@ -61,29 +60,7 @@ export default async function ChapterPage({ params }: Props) {
 
   return (
     <HydrateClient>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link
-            href={`/hadith/${collection}`}
-            className="text-primary hover:text-primary-light transition-colors text-sm"
-          >
-            ← Back to {collectionInfo.name}
-          </Link>
-        </div>
-
-        <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-300 mb-8">
-          <div className="text-center">
-            <div className="text-xl font-semibold text-neutral-800 mb-1">
-              {collectionInfo.name} - Chapter {chapterNum}
-            </div>
-            <div className="text-neutral-500">
-              {collectionInfo.compiler}
-            </div>
-          </div>
-        </div>
-
-        <HadithReader collection={collection} chapterId={chapterNum} />
-      </div>
+      <HadithReader collection={collection} chapterId={chapterNum} />
     </HydrateClient>
   );
 }

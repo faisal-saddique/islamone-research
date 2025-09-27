@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "~/providers/auth-provider";
 import { AuthModal } from "~/components/ui/auth-modal";
-import { BookOpen, Users, Menu, X, User, Bookmark, Clock, Settings, HelpCircle, LogOut, Shield, UserCheck, ChevronDown } from "lucide-react";
+import { BookOpen, Users, Menu, X, User, Bookmark, Settings, HelpCircle, LogOut, Shield, UserCheck, ChevronDown, MessageSquare, Search } from "lucide-react";
 
 export function Header() {
   const { user, dbUser, signOut } = useAuthContext();
@@ -32,9 +32,13 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-              <BookOpen className="w-5 h-5 text-white" />
-            </div>
+            <Image
+              src="/islamone-logo.png"
+              alt="IslamOne Research"
+              width={32}
+              height={32}
+              className="w-8 h-8 group-hover:scale-110 transition-transform"
+            />
             <span className="text-xl font-bold text-gray-900">
               Islam<span className="text-primary">One</span> Research
             </span>
@@ -45,22 +49,24 @@ export function Header() {
             {user && (
               <Link
                 href="/dashboard"
-                className="text-gray-600 hover:text-primary transition-colors font-medium flex items-center gap-2"
+                className="text-primary hover:text-primary-light transition-colors font-semibold flex items-center gap-2"
               >
-                <Users className="w-4 h-4" />
-                Dashboard
+                <MessageSquare className="w-4 h-4" />
+                Review Dashboard
               </Link>
             )}
             <Link
               href="/quran"
-              className="text-gray-600 hover:text-primary transition-colors font-medium"
+              className="text-gray-600 hover:text-primary transition-colors font-medium flex items-center gap-2"
             >
+              <BookOpen className="w-4 h-4" />
               Quran
             </Link>
             <Link
               href="/hadith"
-              className="text-gray-600 hover:text-primary transition-colors font-medium"
+              className="text-gray-600 hover:text-primary transition-colors font-medium flex items-center gap-2"
             >
+              <Search className="w-4 h-4" />
               Hadith
             </Link>
           </nav>
@@ -166,10 +172,10 @@ export function Header() {
                         className="flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                         onClick={() => setIsProfileDropdownOpen(false)}
                       >
-                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Bookmark className="w-4 h-4 text-gray-600" />
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <MessageSquare className="w-4 h-4 text-primary" />
                         </div>
-                        Bookmarks
+                        Review Dashboard
                       </Link>
 
                       <Link
@@ -178,9 +184,9 @@ export function Header() {
                         onClick={() => setIsProfileDropdownOpen(false)}
                       >
                         <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Clock className="w-4 h-4 text-gray-600" />
+                          <Bookmark className="w-4 h-4 text-gray-600" />
                         </div>
-                        Reading History
+                        Bookmarks
                       </Link>
 
                       <Link
@@ -314,25 +320,27 @@ export function Header() {
               {user && (
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-3 text-gray-600 hover:text-primary transition-colors font-medium"
+                  className="flex items-center gap-3 text-primary hover:text-primary-light transition-colors font-semibold"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Users className="w-4 h-4" />
-                  Dashboard
+                  <MessageSquare className="w-4 h-4" />
+                  Review Dashboard
                 </Link>
               )}
               <Link
                 href="/quran"
-                className="text-gray-600 hover:text-primary transition-colors font-medium"
+                className="flex items-center gap-3 text-gray-600 hover:text-primary transition-colors font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
+                <BookOpen className="w-4 h-4" />
                 Quran
               </Link>
               <Link
                 href="/hadith"
-                className="text-gray-600 hover:text-primary transition-colors font-medium"
+                className="flex items-center gap-3 text-gray-600 hover:text-primary transition-colors font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
+                <Search className="w-4 h-4" />
                 Hadith
               </Link>
 

@@ -17,8 +17,12 @@ import { ToastContainer } from "~/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "IslamOne Research",
-  description: "Comprehensive Islamic research platform with Quran, Hadith, and Islamic literature",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  description: "Collaborative platform for reviewing and verifying Quran translations with precision",
+  icons: [
+    { rel: "icon", url: "/islamone-logo.png" },
+    { rel: "apple-touch-icon", url: "/islamone-logo.png" },
+    { rel: "shortcut icon", url: "/islamone-logo.png" }
+  ],
 };
 
 const inter = Inter({

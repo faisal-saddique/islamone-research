@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, BookMarked, Share, Bookmark, Info, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen, Share, Bookmark, Info, Users } from "lucide-react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 
@@ -11,12 +11,12 @@ interface HadithReaderProps {
 }
 
 const collectionInfo = {
-  bukhari: { name: "Sahih Bukhari", nameArabic: "صحيح البخاري", compiler: "Imam Al-Bukhari", authority: "Highest" },
-  muslim: { name: "Sahih Muslim", nameArabic: "صحيح مسلم", compiler: "Imam Muslim", authority: "Highest" },
-  abudawood: { name: "Sunan Abu Dawud", nameArabic: "سنن أبو داود", compiler: "Imam Abu Dawud", authority: "High" },
-  tirmidhi: { name: "Jami at-Tirmidhi", nameArabic: "جامع الترمذي", compiler: "Imam At-Tirmidhi", authority: "High" },
-  nasai: { name: "Sunan an-Nasai", nameArabic: "سنن النسائي", compiler: "Imam An-Nasai", authority: "High" },
-  ibnemaaja: { name: "Sunan Ibn Majah", nameArabic: "سنن ابن ماجه", compiler: "Imam Ibn Majah", authority: "Moderate" }
+  bukhari: { name: "Sahih Bukhari", nameArabic: "صحيح البخاري", compiler: "Imam Al-Bukhari" },
+  muslim: { name: "Sahih Muslim", nameArabic: "صحيح مسلم", compiler: "Imam Muslim" },
+  abudawood: { name: "Sunan Abu Dawud", nameArabic: "سنن أبو داود", compiler: "Imam Abu Dawud" },
+  tirmidhi: { name: "Jami at-Tirmidhi", nameArabic: "جامع الترمذي", compiler: "Imam At-Tirmidhi" },
+  nasai: { name: "Sunan an-Nasai", nameArabic: "سنن النسائي", compiler: "Imam An-Nasai" },
+  ibnemaaja: { name: "Sunan Ibn Majah", nameArabic: "سنن ابن ماجه", compiler: "Imam Ibn Majah" }
 };
 
 export function HadithReader({ collection, chapterId }: HadithReaderProps) {
@@ -36,9 +36,9 @@ export function HadithReader({ collection, chapterId }: HadithReaderProps) {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <Link href="/hadith" className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors">
+            <Link href={`/hadith/${collection}`} className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors">
               <ChevronLeft className="w-5 h-5" />
-              <span>Back to Collections</span>
+              <span>Back to {collectionData?.name}</span>
             </Link>
             <div className="flex items-center gap-2">
               <button
@@ -57,33 +57,38 @@ export function HadithReader({ collection, chapterId }: HadithReaderProps) {
           </div>
 
           {collectionData && (
-            <div className="bg-white rounded-2xl p-8 border border-gray-200">
-              <div className="text-center">
-                <div className="inline-flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                    <BookMarked className="w-6 h-6 text-white" />
-                  </div>
-                  <h1 className="text-3xl font-semibold text-gray-800">{collectionData.name}</h1>
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <div className="arabic-text text-3xl text-primary font-medium mb-4 text-center">
-                  {collectionData.nameArabic}
-                </div>
-                <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
-                  <span className="font-medium">{collectionData.compiler}</span>
-                  <span>•</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    collectionData.authority === "Highest" ? "bg-emerald-100 text-emerald-700" :
-                    collectionData.authority === "High" ? "bg-blue-100 text-blue-700" :
-                    "bg-gray-100 text-gray-700"
-                  }`}>
-                    {collectionData.authority} Authority
-                  </span>
-                  <span>•</span>
-                  <span>Chapter {chapterId}</span>
-                </div>
+                <h1 className="text-3xl font-semibold text-gray-800">{collectionData.name}</h1>
+              </div>
+              <div className="arabic-text text-4xl text-primary font-medium mb-4 text-center">
+                {collectionData.nameArabic}
+              </div>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                <span className="font-medium">{collectionData.compiler}</span>
+                <span>•</span>
+                <span>Chapter {chapterId}</span>
               </div>
             </div>
           )}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between items-center mb-8">
+          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors">
+            <ChevronLeft className="w-4 h-4" />
+            <span>Previous Chapter</span>
+          </button>
+          <div className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200">
+            Chapter {chapterId}
+          </div>
+          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors">
+            <span>Next Chapter</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Hadiths */}
@@ -100,13 +105,14 @@ export function HadithReader({ collection, chapterId }: HadithReaderProps) {
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold text-sm">{hadith.HadithNumber}</span>
-                    </div>
-                  </div>
-
                   <div className="flex-1 space-y-6">
+                    {/* Verse Number */}
+                    <div className="text-center">
+                      <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto">
+                        <span className="text-white font-semibold text-xs">{hadith.HadithNumber}</span>
+                      </div>
+                    </div>
+
                     {/* Arabic Text */}
                     {hadith.Arabic && (
                       <div className="arabic-text text-2xl md:text-3xl text-gray-800 leading-loose text-right"
@@ -119,7 +125,7 @@ export function HadithReader({ collection, chapterId }: HadithReaderProps) {
                       {hadith.Urdu && (
                         <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
                           <div className="text-sm font-medium text-gray-500 mb-2 text-right urdu-text">اردو ترجمہ</div>
-                          <div className="urdu-text text-lg text-gray-700 leading-relaxed"
+                          <div className="urdu-text text-lg text-gray-700 leading-relaxed text-right"
                                dangerouslySetInnerHTML={{ __html: hadith.Urdu }}
                           />
                         </div>
@@ -171,20 +177,6 @@ export function HadithReader({ collection, chapterId }: HadithReaderProps) {
           </div>
         )}
 
-        {/* Navigation */}
-        <div className="max-w-4xl mx-auto mt-8 flex justify-between items-center">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors">
-            <ChevronLeft className="w-4 h-4" />
-            <span>Previous Chapter</span>
-          </button>
-          <div className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200">
-            {hadiths.length} Hadiths
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors">
-            <span>Next Chapter</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
       </div>
     </div>
   );

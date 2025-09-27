@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpen, Mail, Heart } from "lucide-react";
+import Image from "next/image";
+import { Mail, Heart, MessageSquare, Users, Star } from "lucide-react";
 
 export function Footer() {
   return (
@@ -7,17 +8,21 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
+              <Image
+                src="/islamone-logo.png"
+                alt="IslamOne Research"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
               <span className="text-xl font-bold text-gray-900">
                 Islam<span className="text-primary">One</span> Research
               </span>
             </div>
             <p className="text-gray-600 mb-6 max-w-md leading-relaxed">
-              A comprehensive Islamic research platform dedicated to preserving and sharing authentic Islamic knowledge through collaborative study and review.
+              Collaborative platform for reviewing and verifying Quran translations. Join Islamic scholars in ensuring authentic and accurate translations through scholarly review.
             </p>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span>Made with</span>
@@ -26,7 +31,35 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Review Platform */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4">Review Platform</h3>
+            <nav className="flex flex-col gap-3">
+              <Link
+                href="/dashboard"
+                className="text-gray-600 hover:text-primary transition-colors flex items-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Start Reviewing
+              </Link>
+              <Link
+                href="/dashboard/review-queue"
+                className="text-gray-600 hover:text-primary transition-colors flex items-center gap-2"
+              >
+                <Star className="w-4 h-4" />
+                Review Queue
+              </Link>
+              <Link
+                href="/dashboard/guidelines"
+                className="text-gray-600 hover:text-primary transition-colors flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                Guidelines
+              </Link>
+            </nav>
+          </div>
+
+          {/* Resources */}
           <div>
             <h3 className="font-semibold text-gray-900 mb-4">Resources</h3>
             <nav className="flex flex-col gap-3">
@@ -84,7 +117,7 @@ export function Footer() {
             © 2025 IslamOne Research. All rights reserved.
           </div>
           <div className="text-sm text-gray-500">
-            Built for Islamic scholarship and research
+            Ensuring authentic Quran translations through collaborative review
           </div>
         </div>
       </div>

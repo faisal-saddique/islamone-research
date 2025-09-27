@@ -97,16 +97,14 @@ export function DashboardContent({ overview, user }: DashboardContentProps) {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome back, {user.displayName ?? user.email?.split('@')[0]}! 👋
-              </h1>
-              <p className="text-gray-600">
-                Here&apos;s what&apos;s happening with your Islamic research platform today.
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
+          <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+            <h1 className="text-3xl font-semibold text-gray-800 mb-4">
+              Welcome back, {user.displayName ?? user.email?.split('@')[0]}!
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
+              Continue your Quran translation review work and contribute to authentic Islamic scholarship.
+            </p>
+            <div className="flex items-center justify-center gap-4">
               <div className={`px-4 py-2 rounded-full text-sm font-medium text-white ${
                 roleInfo.color === "error" ? "bg-red-500" :
                 roleInfo.color === "warning" ? "bg-amber-500" :
@@ -116,10 +114,10 @@ export function DashboardContent({ overview, user }: DashboardContentProps) {
                 <Award className="w-4 h-4 inline mr-1" />
                 {roleInfo.label}
               </div>
-              <button className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                 <Bell className="w-5 h-5 text-gray-600" />
               </button>
-              <Link href="/settings" className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+              <Link href="/settings" className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                 <Settings className="w-5 h-5 text-gray-600" />
               </Link>
             </div>
@@ -127,26 +125,32 @@ export function DashboardContent({ overview, user }: DashboardContentProps) {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-xl border border-gray-200 p-2 mb-8">
-          <div className="flex space-x-1">
-            {[
-              { id: "overview", label: "Overview", icon: BarChart3 },
-              { id: "activity", label: "Recent Activity", icon: Clock },
-              { id: "progress", label: "Progress", icon: TrendingUp }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
+        <div className="flex justify-between items-center mb-8">
+          <div className="bg-white rounded-xl border border-gray-200 p-2">
+            <div className="flex space-x-1">
+              {[
+                { id: "overview", label: "Overview", icon: BarChart3 },
+                { id: "activity", label: "Recent Activity", icon: Clock },
+                { id: "progress", label: "Progress", icon: TrendingUp }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-primary text-white"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200">
+            {roleInfo.label} Dashboard
           </div>
         </div>
 
@@ -249,53 +253,53 @@ export function DashboardContent({ overview, user }: DashboardContentProps) {
             </div>
 
             {/* Quick Actions */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+            <div className="bg-white rounded-2xl p-8 border border-gray-200">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(user.role === "REVIEWER" || user.role === "MODERATOR" || user.role === "ADMIN") && (
+                  <QuickActionCard
+                    title="Review Translations"
+                    description="Continue your Quran translation review work"
+                    icon={CheckCircle}
+                    href="/dashboard/review"
+                    color="primary"
+                  />
+                )}
                 <QuickActionCard
                   title="Browse Quran"
-                  description="Read and study the Holy Quran with translations and commentary"
+                  description="Read and study the Holy Quran with translations"
                   icon={BookOpen}
                   href="/quran"
-                  color="primary"
+                  color="secondary"
                 />
                 <QuickActionCard
                   title="Explore Hadith"
-                  description="Access authentic Hadith collections from major compilers"
+                  description="Access authentic Hadith collections"
                   icon={BookMarked}
                   href="/hadith"
                   color="secondary"
                 />
-                {(user.role === "REVIEWER" || user.role === "MODERATOR" || user.role === "ADMIN") && (
-                  <QuickActionCard
-                    title="Review Content"
-                    description="Continue your translation review work and earn points"
-                    icon={CheckCircle}
-                    href="/dashboard/review"
-                    color="accent"
-                  />
-                )}
                 {(user.role === "MODERATOR" || user.role === "ADMIN") && (
                   <QuickActionCard
-                    title="Manage Users"
-                    description="View and manage platform users and their roles"
+                    title="Review Queue"
+                    description="Manage flagged content and reviews"
                     icon={Users}
-                    href="/dashboard/user-management"
-                    color="secondary"
+                    href="/dashboard/review-queue"
+                    color="accent"
                   />
                 )}
                 {user.role === "ADMIN" && (
                   <QuickActionCard
-                    title="Analytics"
-                    description="View detailed platform analytics and performance metrics"
+                    title="User Management"
+                    description="Manage platform users and permissions"
                     icon={BarChart3}
                     href="/dashboard/user-management"
                     color="accent"
                   />
                 )}
                 <QuickActionCard
-                  title="Settings"
-                  description="Manage your account preferences and notification settings"
+                  title="Account Settings"
+                  description="Manage your preferences and notifications"
                   icon={Settings}
                   href="/settings"
                   color="primary"

@@ -4,9 +4,9 @@
 
 ### Primary
 ```css
---primary: #20B2AA;          /* Main buttons, links, active states */
---primary-light: #4FD1C7;    /* Hover states */
---primary-subtle: #E6F7F6;   /* Backgrounds, highlights */
+--primary: #079489;          /* Main buttons, links, active states */
+--primary-light: #0BA699;    /* Hover states */
+--primary-subtle: #E0F2F1;   /* Backgrounds, highlights */
 ```
 
 ### Neutrals

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { HadithChapterList } from "~/app/_components/content/hadith-chapter-list";
 import { api, HydrateClient } from "~/trpc/server";
-import { ArrowLeft, BookOpen, User, Star } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 
 interface Props {
   params: Promise<{ collection: string }>;
@@ -54,98 +54,41 @@ export default async function CollectionPage({ params }: Props) {
     console.warn("Failed to prefetch hadith chapters:", error);
   }
 
-  const getCollectionColor = (collection: string) => {
-    const colors = {
-      "bukhari": "from-emerald-500 to-emerald-600",
-      "muslim": "from-blue-500 to-blue-600",
-      "abudawood": "from-purple-500 to-purple-600",
-      "tirmidhi": "from-orange-500 to-orange-600",
-      "nasai": "from-teal-500 to-teal-600",
-      "ibnemaaja": "from-indigo-500 to-indigo-600"
-    };
-    return colors[collection as keyof typeof colors] || "from-gray-500 to-gray-600";
-  };
-
-  const getAuthorityLevel = (collection: string) => {
-    const levels = {
-      "bukhari": "Highest",
-      "muslim": "Highest",
-      "abudawood": "High",
-      "tirmidhi": "High",
-      "nasai": "High",
-      "ibnemaaja": "Moderate"
-    };
-    return levels[collection as keyof typeof levels] || "Moderate";
-  };
 
   return (
     <HydrateClient>
-      <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-primary-subtle/30">
+      <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-primary-subtle">
         <div className="container mx-auto px-4 py-8">
-          {/* Breadcrumb Navigation */}
+          {/* Header */}
           <div className="mb-8">
-            <Link
-              href="/hadith"
-              className="inline-flex items-center gap-2 text-primary hover:text-primary-light transition-colors font-medium"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Hadith Collections
-            </Link>
-          </div>
-
-          {/* Collection Header */}
-          <div className="bg-white rounded-2xl p-8 md:p-12 border border-gray-200/60 shadow-sm mb-8">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-6">
-                <div className={`w-16 h-16 bg-gradient-to-r ${getCollectionColor(collection)} rounded-2xl flex items-center justify-center shadow-lg`}>
-                  <BookOpen className="w-8 h-8 text-white" />
-                </div>
-              </div>
-
-              <div className="arabic-text text-3xl md:text-4xl text-gray-900 font-medium mb-4 leading-relaxed text-center">
-                {collectionInfo.nameArabic}
-              </div>
-
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                {collectionInfo.name}
-              </h1>
-
-              <div className="flex items-center justify-center gap-4 mb-6">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <User className="w-5 h-5" />
-                  <span className="font-medium">{collectionInfo.compiler}</span>
-                </div>
-
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-                  getAuthorityLevel(collection) === "Highest" ? "bg-emerald-100 text-emerald-700" :
-                  getAuthorityLevel(collection) === "High" ? "bg-blue-100 text-blue-700" :
-                  "bg-gray-100 text-gray-700"
-                }`}>
-                  <Star className="w-4 h-4" />
-                  {getAuthorityLevel(collection)} Authority
-                </div>
-              </div>
-
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Explore the authentic narrations from this renowned collection, meticulously compiled and verified by Islamic scholars.
-              </p>
+            <div className="flex items-center justify-between mb-6">
+              <Link href="/hadith" className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Hadith Collections</span>
+              </Link>
             </div>
-          </div>
 
-          {/* Chapters Section */}
-          <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Chapters</h2>
+                <h1 className="text-3xl font-semibold text-gray-800">{collectionInfo.name}</h1>
+              </div>
+              <div className="arabic-text text-4xl text-primary font-medium mb-4 text-center">
+                {collectionInfo.nameArabic}
+              </div>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                <span className="font-medium">{collectionInfo.compiler}</span>
+                <span>•</span>
+                <span>Authentic Hadith Collection</span>
               </div>
             </div>
+          </div>
 
-            <div className="p-6">
-              <HadithChapterList collection={collection} />
-            </div>
+          {/* Chapters */}
+          <div className="max-w-4xl mx-auto">
+            <HadithChapterList collection={collection} />
           </div>
         </div>
       </div>
