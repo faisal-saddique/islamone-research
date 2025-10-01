@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 import { HadithBrowser } from "~/app/_components/content/hadith-browser";
 import { api, HydrateClient } from "~/trpc/server";
+import { HadithBrowserSkeleton } from "~/components/skeletons/hadith-browser-skeleton";
 
 export const metadata: Metadata = {
   title: "Hadith - IslamOne Research",
@@ -18,7 +20,9 @@ export default async function Hadith() {
 
   return (
     <HydrateClient>
-      <HadithBrowser />
+      <Suspense fallback={<HadithBrowserSkeleton />}>
+        <HadithBrowser />
+      </Suspense>
     </HydrateClient>
   );
 }

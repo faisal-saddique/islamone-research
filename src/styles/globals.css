@@ -129,3 +129,27 @@
   line-height: 1.8;
   font-weight: 400;
 }
+
+/* Urdu text centered */
+.urdu-text-center {
+  font-family: var(--font-urdu);
+  font-feature-settings: "liga" on, "calt" on;
+  direction: rtl;
+  text-align: center;
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+/* Shimmer animation for skeleton loaders */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}

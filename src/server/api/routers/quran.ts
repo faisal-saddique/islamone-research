@@ -46,15 +46,32 @@ export const quranRouter = createTRPCRouter({
   }),
 
   getAyahs: publicProcedure
-    .input(z.object({ surahNumber: z.number().min(1).max(114) }))
+    .input(z.object({
+      surahNumber: z.number().min(1).max(114),
+      limit: z.number().optional().default(20),
+      offset: z.number().optional().default(0)
+    }))
     .query(async ({ ctx, input }) => {
+      // Get total count first
+      const totalCount = await ctx.db.ayah.count({
+        where: { SurahNumber: input.surahNumber },
+      });
+
       const ayahs = await ctx.db.ayah.findMany({
         where: { SurahNumber: input.surahNumber },
         orderBy: { AyahNumber: "asc" },
+        take: input.limit,
+        skip: input.offset,
       });
 
       const translations = await ctx.db.translations.findMany({
-        where: { SurahNumber: input.surahNumber },
+        where: {
+          SurahNumber: input.surahNumber,
+          AyahNumber: {
+            gte: ayahs[0]?.AyahNumber ?? 1,
+            lte: ayahs[ayahs.length - 1]?.AyahNumber ?? 1,
+          }
+        },
         orderBy: { AyahNumber: "asc" },
         select: {
           AyahNumber: true,
@@ -103,6 +120,10 @@ export const quranRouter = createTRPCRouter({
         };
       });
 
-      return ayahsWithTranslations;
+      return {
+        ayahs: ayahsWithTranslations,
+        totalCount,
+        hasMore: input.offset + input.limit < totalCount,
+      };
     }),
 });

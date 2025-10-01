@@ -6,18 +6,16 @@ import { useAuthContext } from "~/providers/auth-provider";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
 import { useFont } from "~/contexts/font-context";
-import { LoadingState } from "~/app/_components/common/loading-state";
+import { ReviewPageSkeleton } from "~/components/skeletons/review-page-skeleton";
 import { ErrorState } from "~/app/_components/common/error-state";
 import {
   ChevronLeft,
   ChevronRight,
   CheckCircle,
   AlertCircle,
-  Clock,
   Star,
   MessageSquare,
   Send,
-  BookOpen,
   Target
 } from "lucide-react";
 
@@ -537,7 +535,7 @@ function ReviewPageContent() {
 
 export default function ReviewPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<ReviewPageSkeleton />}>
       <ReviewPageContent />
     </Suspense>
   );

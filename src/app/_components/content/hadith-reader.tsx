@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, BookOpen, Share, Bookmark, Info, Users } from "lucide-react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
+import { SkeletonWithShimmer } from "~/components/ui/skeleton";
 
 interface HadithReaderProps {
   collection: string;
   chapterId: number;
 }
+
+const HADITHS_PER_PAGE = 15;
 
 const collectionInfo = {
   bukhari: { name: "Sahih Bukhari", nameArabic: "صحيح البخاري", compiler: "Imam Al-Bukhari" },
@@ -20,15 +23,58 @@ const collectionInfo = {
 };
 
 export function HadithReader({ collection, chapterId }: HadithReaderProps) {
-  const [hadiths] = api.hadith.getHadithsByChapter.useSuspenseQuery({
-    collection: collection as 'bukhari' | 'muslim' | 'abudawood' | 'tirmidhi' | 'nasai' | 'ibnemaaja',
-    chapterId,
-    limit: 50
-  });
   const [selectedHadith, setSelectedHadith] = useState<number | null>(null);
   const [showSanad, setShowSanad] = useState(false);
+  const [allHadiths, setAllHadiths] = useState<Array<Record<string, unknown>>>([]);
+  const [page, setPage] = useState(0);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const collectionData = collectionInfo[collection as keyof typeof collectionInfo];
+
+  // Fetch hadiths with pagination
+  const { data, isLoading, isFetching } = api.hadith.getHadithsByChapter.useQuery(
+    {
+      collection: collection as 'bukhari' | 'muslim' | 'abudawood' | 'tirmidhi' | 'nasai' | 'ibnemaaja',
+      chapterId,
+      limit: HADITHS_PER_PAGE,
+      offset: page * HADITHS_PER_PAGE
+    },
+    {
+      placeholderData: (previousData) => previousData,
+    }
+  );
+
+  // Calculate hasMore from data length
+  const hasMore = data && data.length === HADITHS_PER_PAGE;
+
+  // Append new hadiths to the list
+  useEffect(() => {
+    if (data) {
+      setAllHadiths((prev) => {
+        const existingIds = new Set(prev.map(h => h.Id));
+        const newHadiths = data.filter(h => !existingIds.has(h.Id));
+        return [...prev, ...newHadiths];
+      });
+    }
+  }, [data]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || isFetching) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [hasMore, isFetching]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-primary-subtle">
@@ -93,89 +139,136 @@ export function HadithReader({ collection, chapterId }: HadithReaderProps) {
 
         {/* Hadiths */}
         <div className="max-w-4xl mx-auto space-y-6">
-          {hadiths.map((hadith) => (
-            <div
-              key={hadith.Id}
-              className={`group bg-white rounded-xl border-2 transition-all duration-200 ${
-                selectedHadith === hadith.HadithNumber
-                  ? "border-primary shadow-lg"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-              onClick={() => setSelectedHadith(selectedHadith === hadith.HadithNumber ? null : hadith.HadithNumber)}
-            >
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1 space-y-6">
-                    {/* Verse Number */}
-                    <div className="text-center">
-                      <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto">
-                        <span className="text-white font-semibold text-xs">{hadith.HadithNumber}</span>
+          {allHadiths.map((hadith) => {
+            const hadithId = hadith.Id as number;
+            const hadithNumber = hadith.HadithNumber as number | null;
+            const hadithArabic = hadith.Arabic as string | null | undefined;
+            const hadithUrdu = hadith.Urdu as string | null | undefined;
+            const hadithEnglish = hadith.English as string | null | undefined;
+            const hadithSanad = hadith.Sanad as string | null | undefined;
+
+            return (
+              <div
+                key={hadithId}
+                className={`group bg-white rounded-xl border-2 transition-all duration-200 ${
+                  selectedHadith === hadithNumber
+                    ? "border-primary shadow-lg"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                onClick={() => setSelectedHadith(selectedHadith === hadithNumber ? null : hadithNumber)}
+              >
+                <div className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1 space-y-6">
+                      {/* Verse Number */}
+                      <div className="text-center">
+                        <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto">
+                          <span className="text-white font-semibold text-xs">{hadithNumber}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Arabic Text */}
-                    {hadith.Arabic && (
-                      <div className="arabic-text text-2xl md:text-3xl text-gray-800 leading-loose text-right"
-                           dangerouslySetInnerHTML={{ __html: hadith.Arabic }}
-                      />
-                    )}
-
-                    {/* Translations */}
-                    <div className="space-y-4">
-                      {hadith.Urdu && (
-                        <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
-                          <div className="text-sm font-medium text-gray-500 mb-2 text-right urdu-text">اردو ترجمہ</div>
-                          <div className="urdu-text text-lg text-gray-700 leading-relaxed text-right"
-                               dangerouslySetInnerHTML={{ __html: hadith.Urdu }}
-                          />
-                        </div>
-                      )}
-
-                      {hadith.English && (
-                        <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-emerald-400">
-                          <div className="text-sm font-medium text-gray-500 mb-2">English Translation</div>
-                          <div className="text-lg text-gray-700 leading-relaxed"
-                               dangerouslySetInnerHTML={{ __html: hadith.English }}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Chain of Narration */}
-                    {showSanad && hadith.Sanad && (
-                      <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                        <div className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-3">
-                          <Users className="w-4 h-4" />
-                          <span>Chain of Narration (Sanad)</span>
-                        </div>
-                        <div className="text-sm text-blue-800 leading-relaxed"
-                             dangerouslySetInnerHTML={{ __html: hadith.Sanad }}
+                      {/* Arabic Text */}
+                      {hadithArabic && (
+                        <div className="arabic-text text-2xl md:text-3xl text-gray-800 leading-loose text-right"
+                             dangerouslySetInnerHTML={{ __html: hadithArabic }}
                         />
-                      </div>
-                    )}
-                  </div>
+                      )}
 
-                  <div className="flex-shrink-0">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100">
-                      <Bookmark className="w-5 h-5 text-gray-400" />
-                    </button>
+                      {/* Translations */}
+                      <div className="space-y-4">
+                        {hadithUrdu && (
+                          <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
+                            <div className="text-sm font-medium text-gray-500 mb-2 text-right urdu-text">اردو ترجمہ</div>
+                            <div className="urdu-text text-lg text-gray-700 leading-relaxed text-right"
+                                 dangerouslySetInnerHTML={{ __html: hadithUrdu }}
+                            />
+                          </div>
+                        )}
+
+                        {hadithEnglish && (
+                          <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-emerald-400">
+                            <div className="text-sm font-medium text-gray-500 mb-2">English Translation</div>
+                            <div className="text-lg text-gray-700 leading-relaxed"
+                                 dangerouslySetInnerHTML={{ __html: hadithEnglish }}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Chain of Narration */}
+                      {showSanad && hadithSanad && (
+                        <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                          <div className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-3">
+                            <Users className="w-4 h-4" />
+                            <span>Chain of Narration (Sanad)</span>
+                          </div>
+                          <div className="text-sm text-blue-800 leading-relaxed"
+                               dangerouslySetInnerHTML={{ __html: hadithSanad }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100">
+                        <Bookmark className="w-5 h-5 text-gray-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            );
+          })}
 
-        {/* Empty State */}
-        {hadiths.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Info className="w-8 h-8 text-gray-400" />
+          {/* Loading indicator */}
+          {isFetching && (
+            <div className="space-y-6">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border-2 border-gray-200 p-6">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <SkeletonWithShimmer className="w-6 h-6 rounded-full mx-auto" />
+                    </div>
+                    <div className="space-y-3">
+                      <SkeletonWithShimmer className="h-8 w-full" />
+                      <SkeletonWithShimmer className="h-8 w-11/12" />
+                      <SkeletonWithShimmer className="h-8 w-10/12" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <h3 className="text-lg font-medium text-gray-800 mb-2">No hadiths found</h3>
-            <p className="text-gray-600">This chapter may not contain any hadiths or the data is still loading</p>
-          </div>
-        )}
+          )}
+
+          {/* Infinite scroll trigger */}
+          {hasMore && (
+            <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+              <div className="text-gray-500 text-sm">Loading more hadiths...</div>
+            </div>
+          )}
+
+          {/* End message */}
+          {!hasMore && allHadiths.length > 0 && (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-subtle rounded-full">
+                <span className="text-primary font-medium text-sm">
+                  End of Chapter {chapterId}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {allHadiths.length === 0 && !isLoading && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Info className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-800 mb-2">No hadiths found</h3>
+              <p className="text-gray-600">This chapter may not contain any hadiths</p>
+            </div>
+          )}
+        </div>
 
       </div>
     </div>

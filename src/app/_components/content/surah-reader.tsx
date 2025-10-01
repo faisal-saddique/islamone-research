@@ -1,20 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Settings, Bookmark, Share } from "lucide-react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { useFont } from "~/contexts/font-context";
+import { SkeletonWithShimmer } from "~/components/ui/skeleton";
 
 interface SurahReaderProps {
   surahNumber: number;
 }
 
+const AYAHS_PER_PAGE = 20;
+
 export function SurahReader({ surahNumber }: SurahReaderProps) {
-  const [ayahs] = api.quran.getAyahs.useSuspenseQuery({ surahNumber });
   const [surah] = api.quran.getSurahByNumber.useSuspenseQuery({ surahNumber });
   const { getAyahText, showUrduTranslation, currentEnglishTranslation, currentUrduTranslation } = useFont();
   const [selectedAyah, setSelectedAyah] = useState<number | null>(null);
+  const [allAyahs, setAllAyahs] = useState<Array<Record<string, unknown>>>([]);
+  const [page, setPage] = useState(0);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Fetch ayahs with pagination
+  const { data, isFetching } = api.quran.getAyahs.useQuery(
+    {
+      surahNumber,
+      limit: AYAHS_PER_PAGE,
+      offset: page * AYAHS_PER_PAGE
+    },
+    {
+      placeholderData: (previousData) => previousData,
+    }
+  );
+
+  // Append new ayahs to the list
+  useEffect(() => {
+    if (data?.ayahs) {
+      setAllAyahs((prev) => {
+        // Avoid duplicates
+        const existingIds = new Set(prev.map(a => a.Id));
+        const newAyahs = data.ayahs.filter(a => !existingIds.has(a.Id));
+        return [...prev, ...newAyahs];
+      });
+    }
+  }, [data]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !data?.hasMore || isFetching) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && data?.hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [data?.hasMore, isFetching]);
 
   const getSelectedEnglishTranslation = (ayah: { AllTranslations?: { english?: Record<string, string | null | undefined> }; Translation?: string | null }) => {
     if (!ayah.AllTranslations?.english) return ayah.Translation;
@@ -125,62 +172,109 @@ export function SurahReader({ surahNumber }: SurahReaderProps) {
 
         {/* Ayahs */}
         <div className="max-w-4xl mx-auto space-y-6">
-          {ayahs.map((ayah) => (
-            <div
-              key={ayah.Id}
-              className={`group bg-white rounded-xl border-2 transition-all duration-200 ${
-                selectedAyah === ayah.AyahNumber
-                  ? "border-primary shadow-lg"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-              onClick={() => setSelectedAyah(selectedAyah === ayah.AyahNumber ? null : ayah.AyahNumber)}
-            >
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1 space-y-6">
-                    {/* Verse Number */}
-                    <div className="text-center">
-                      <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto">
-                        <span className="text-white font-semibold text-xs">{ayah.AyahNumber}</span>
+          {allAyahs.map((ayah) => {
+            const ayahId = ayah.Id as number;
+            const ayahNumber = ayah.AyahNumber as number;
+
+            return (
+              <div
+                key={ayahId}
+                className={`group bg-white rounded-xl border-2 transition-all duration-200 ${
+                  selectedAyah === ayahNumber
+                    ? "border-primary shadow-lg"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                onClick={() => setSelectedAyah(selectedAyah === ayahNumber ? null : ayahNumber)}
+              >
+                <div className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1 space-y-6">
+                      {/* Verse Number */}
+                      <div className="text-center">
+                        <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center mx-auto">
+                          <span className="text-white font-semibold text-xs">{ayahNumber}</span>
+                        </div>
+                      </div>
+
+                      {/* Arabic Text */}
+                      <div className="arabic-text text-2xl md:text-3xl text-gray-800 leading-loose text-right">
+                        {getAyahText(ayah as never)}
+                      </div>
+
+                      {/* Translations */}
+                      <div className="space-y-4">
+                        {showUrduTranslation && getSelectedUrduTranslation(ayah as never) && (
+                          <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
+                            <div className="text-sm font-medium text-gray-500 mb-2 text-right urdu-text">اردو ترجمہ</div>
+                            <div className="urdu-text text-lg text-gray-700 leading-relaxed">
+                              {getSelectedUrduTranslation(ayah as never)}
+                            </div>
+                          </div>
+                        )}
+
+                        {getSelectedEnglishTranslation(ayah as never) && (
+                          <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-emerald-400">
+                            <div className="text-sm font-medium text-gray-500 mb-2">English Translation</div>
+                            <div className="text-lg text-gray-700 leading-relaxed">
+                              {getSelectedEnglishTranslation(ayah as never)}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Arabic Text */}
-                    <div className="arabic-text text-2xl md:text-3xl text-gray-800 leading-loose text-right">
-                      {getAyahText(ayah)}
+                    <div className="flex-shrink-0">
+                      <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100">
+                        <Bookmark className="w-5 h-5 text-gray-400" />
+                      </button>
                     </div>
-
-                    {/* Translations */}
-                    <div className="space-y-4">
-                      {showUrduTranslation && getSelectedUrduTranslation(ayah) && (
-                        <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
-                          <div className="text-sm font-medium text-gray-500 mb-2 text-right urdu-text">اردو ترجمہ</div>
-                          <div className="urdu-text text-lg text-gray-700 leading-relaxed">
-                            {getSelectedUrduTranslation(ayah)}
-                          </div>
-                        </div>
-                      )}
-
-                      {getSelectedEnglishTranslation(ayah) && (
-                        <div className="p-4 bg-gray-50 rounded-lg border-l-4 border-emerald-400">
-                          <div className="text-sm font-medium text-gray-500 mb-2">English Translation</div>
-                          <div className="text-lg text-gray-700 leading-relaxed">
-                            {getSelectedEnglishTranslation(ayah)}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex-shrink-0">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100">
-                      <Bookmark className="w-5 h-5 text-gray-400" />
-                    </button>
                   </div>
                 </div>
               </div>
+            );
+          })}
+
+          {/* Loading indicator */}
+          {isFetching && (
+            <div className="space-y-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border-2 border-gray-200 p-6">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <SkeletonWithShimmer className="w-6 h-6 rounded-full mx-auto" />
+                    </div>
+                    <div className="space-y-3">
+                      <SkeletonWithShimmer className="h-8 w-full" />
+                      <SkeletonWithShimmer className="h-8 w-5/6 mx-auto" />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <SkeletonWithShimmer className="h-5 w-full" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Infinite scroll trigger */}
+          {data?.hasMore && (
+            <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+              <div className="text-gray-500 text-sm">Loading more ayahs...</div>
+            </div>
+          )}
+
+          {/* End message */}
+          {!data?.hasMore && allAyahs.length > 0 && (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-subtle rounded-full">
+                <span className="text-primary font-medium text-sm">
+                  End of Surah {surah?.NameEnglish}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { api } from "~/trpc/react";
 import { DashboardContent } from "~/app/_components/dashboard/dashboard-content";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { LoadingState } from "~/app/_components/common/loading-state";
+import { DashboardSkeleton } from "~/components/skeletons/dashboard-skeleton";
 import { ErrorState } from "~/app/_components/common/error-state";
 
 export default function Dashboard() {
@@ -24,7 +24,7 @@ export default function Dashboard() {
   );
 
   if (isLoading || overviewLoading) {
-    return <LoadingState />;
+    return <DashboardSkeleton />;
   }
 
   if (!user || !dbUser) {

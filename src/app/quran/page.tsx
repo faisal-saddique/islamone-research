@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 import { QuranBrowser } from "~/app/_components/content/quran-browser";
 import { api, HydrateClient } from "~/trpc/server";
+import { QuranBrowserSkeleton } from "~/components/skeletons/quran-browser-skeleton";
 
 export const metadata: Metadata = {
   title: "Quran - IslamOne Research",
@@ -18,7 +20,9 @@ export default async function Quran() {
 
   return (
     <HydrateClient>
-      <QuranBrowser />
+      <Suspense fallback={<QuranBrowserSkeleton />}>
+        <QuranBrowser />
+      </Suspense>
     </HydrateClient>
   );
 }

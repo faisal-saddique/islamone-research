@@ -1,7 +1,9 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { HadithReader } from "~/app/_components/content/hadith-reader";
 import { api, HydrateClient } from "~/trpc/server";
+import { HadithReaderSkeleton } from "~/components/skeletons/hadith-reader-skeleton";
 
 interface Props {
   params: Promise<{ collection: string; chapterId: string }>;
@@ -60,7 +62,9 @@ export default async function ChapterPage({ params }: Props) {
 
   return (
     <HydrateClient>
-      <HadithReader collection={collection} chapterId={chapterNum} />
+      <Suspense fallback={<HadithReaderSkeleton />}>
+        <HadithReader collection={collection} chapterId={chapterNum} />
+      </Suspense>
     </HydrateClient>
   );
 }

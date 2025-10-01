@@ -1,7 +1,9 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { SurahReader } from "~/app/_components/content/surah-reader";
 import { api, HydrateClient } from "~/trpc/server";
+import { SurahReaderSkeleton } from "~/components/skeletons/surah-reader-skeleton";
 
 interface Props {
   params: Promise<{ surahNumber: string }>;
@@ -41,11 +43,13 @@ export default async function SurahPage({ params }: Props) {
     notFound();
   }
 
-  void api.quran.getAyahs.prefetch({ surahNumber: num });
+  void api.quran.getAyahs.prefetch({ surahNumber: num, limit: 20, offset: 0 });
 
   return (
     <HydrateClient>
-      <SurahReader surahNumber={num} />
+      <Suspense fallback={<SurahReaderSkeleton />}>
+        <SurahReader surahNumber={num} />
+      </Suspense>
     </HydrateClient>
   );
 }

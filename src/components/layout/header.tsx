@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "~/providers/auth-provider";
 import { AuthModal } from "~/components/ui/auth-modal";
-import { BookOpen, Users, Menu, X, User, Bookmark, Settings, HelpCircle, LogOut, Shield, UserCheck, ChevronDown, MessageSquare, Search } from "lucide-react";
+import { BookOpen, Users, Menu, X, User, Bookmark, Settings, HelpCircle, LogOut, Shield, UserCheck, ChevronDown, MessageSquare, Search, Heart } from "lucide-react";
 
 export function Header() {
   const { user, dbUser, signOut } = useAuthContext();
@@ -68,6 +68,13 @@ export function Header() {
             >
               <Search className="w-4 h-4" />
               Hadith
+            </Link>
+            <Link
+              href="/azkaar"
+              className="text-gray-600 hover:text-primary transition-colors font-medium flex items-center gap-2"
+            >
+              <Heart className="w-4 h-4" />
+              Azkaar
             </Link>
           </nav>
 
@@ -342,6 +349,14 @@ export function Header() {
               >
                 <Search className="w-4 h-4" />
                 Hadith
+              </Link>
+              <Link
+                href="/azkaar"
+                className="flex items-center gap-3 text-gray-600 hover:text-primary transition-colors font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Heart className="w-4 h-4" />
+                Azkaar
               </Link>
 
               {user ? (
